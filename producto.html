@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Diamond Mod Kit | Vanto</title>
+    <link rel="icon" type="image/png" href="https://imgur.com/kbF7hve.png">
+    
+    <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&family=Playfair+Display:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+    
+    <style>
+        body { background-color: #050505; color: #E5E5E5; font-family: 'Lato', sans-serif; }
+        .serif { font-family: 'Playfair Display', serif; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        .selected-ring { box-shadow: 0 0 0 2px #050505, 0 0 0 4px #D4AF37; }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+
+        // DATA
+        const essentialsImages = [
+            "https://i.imgur.com/SSK1Afy.jpeg", "https://i.imgur.com/a1j8inY.jpeg", "https://i.imgur.com/k9vp5hV.jpeg",
+            "https://i.imgur.com/TP7sIem.jpeg", "https://i.imgur.com/GMJMfm1.jpeg", "https://i.imgur.com/0XJC1I9.jpeg",
+            "https://i.imgur.com/6JH0Wof.jpeg", "https://i.imgur.com/fSdEgeF.jpeg", "https://i.imgur.com/ZskP6Ox.jpeg",
+            "https://i.imgur.com/LZPIuFp.jpeg", "https://i.imgur.com/RRhzX8F.jpeg", "https://i.imgur.com/rTokCGt.jpeg"
+        ];
+
+        const variants = {
+            black: { standard: "https://imgur.com/mTZrfNk.png", gold: "https://imgur.com/sSVEjXx.png", silver: "https://imgur.com/BVxeZjT.png" },
+            green: { standard: "https://imgur.com/4XHXHEr.png", gold: "https://imgur.com/4XHXHEr.png", silver: "https://imgur.com/6uOtpc8.png" },
+            orange: { standard: "https://imgur.com/Ecasdst.png", gold: "https://imgur.com/49SZTDb.png", silver: "https://imgur.com/pDk7Gkq.png" },
+            red: { standard: "https://imgur.com/F9maphh.png", gold: "https://imgur.com/iEo5vH6.png", silver: "https://imgur.com/KZAkaCL.png" },
+            white: { standard: "https://imgur.com/aJBqGPw.png", gold: "https://imgur.com/RhQXnrz.png", silver: "https://imgur.com/XXZWf5V.png" }
+        };
+
+        const detailsImages = [
+            "https://imgur.com/jqTb79Y.png", "https://imgur.com/rllKylx.png", "https://imgur.com/iDxtSX8.png",
+            "https://imgur.com/xh8ndCi.png", "https://imgur.com/Kl6mloF.png", "https://imgur.com/84Ltctb.png"
+        ];
+
+        const Navbar = () => (
+            <nav className="fixed w-full z-50 py-6 px-8 flex justify-between items-center bg-[#050505]/95 backdrop-blur border-b border-white/5">
+                <a href="catalog.html" className="text-gray-400 text-xs tracking-widest hover:text-white uppercase flex items-center">
+                    &larr; <span className="ml-2">Volver al Catálogo</span>
+                </a>
+                <a href="index.html">
+                    <img src="https://imgur.com/JZmpC36.png" alt="VANTO" className="h-8 invert brightness-200" />
+                </a>
+                <div className="w-12"></div>
+            </nav>
+        );
+
+        const ProductPage = () => {
+            const [color, setColor] = useState('black');
+            const [frame, setFrame] = useState('standard');
+            const [mainImage, setMainImage] = useState(variants['black']['standard']);
+
+            // Auto-select based on URL params
+            useEffect(() => {
+                const params = new URLSearchParams(window.location.search);
+                const colorParam = params.get('color');
+                const frameParam = params.get('frame');
+
+                if (colorParam && variants[colorParam]) {
+                    setColor(colorParam);
+                }
+                if (frameParam) {
+                    setFrame(frameParam);
+                }
+            }, []);
+
+            useEffect(() => {
+                const img = (variants[color] && variants[color][frame]) ? variants[color][frame] : variants[color]['standard'];
+                setMainImage(img);
+            }, [color, frame]);
+
+            const handleWhatsAppBuy = () => {
+                const message = `Hola Vanto, estoy interesado en el *Diamond Mod Kit*.%0A%0A- Color: ${color.toUpperCase()}%0A- Acabado: ${frame.toUpperCase()}%0A- Precio: $3,799 MXN%0A%0A¿Cuál es el costo de envío a mi ciudad?`;
+                window.open(`https://wa.me/521XXXXXXXXXX?text=${message}`, '_blank');
+            };
+
+            return (
+                <div className="pt-32 pb-20 container mx-auto px-6">
+                    <div className="flex flex-col lg:flex-row gap-16">
+                        {/* LEFT: IMAGES */}
+                        <div className="w-full lg:w-3/5">
+                            <div className="aspect-square bg-[#111] border border-white/5 mb-4 relative overflow-hidden group rounded-sm">
+                                <img src={mainImage} alt="Main Product" className="w-full h-full object-contain p-8 group-hover:scale-105 transition-transform duration-700" />
+                            </div>
+                            <div className="grid grid-cols-4 md:grid-cols-6 gap-2">
+                                {detailsImages.map((img, i) => (
+                                    <div key={i} className="aspect-square bg-[#111] border border-white/10 cursor-pointer hover:border-[#D4AF37] transition-colors" onClick={() => setMainImage(img)}>
+                                        <img src={img} className="w-full h-full object-cover opacity-70 hover:opacity-100" />
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+
+                        {/* RIGHT: INFO */}
+                        <div className="w-full lg:w-2/5 flex flex-col h-full sticky top-32">
+                            <h2 className="text-[#D4AF37] text-xs font-bold tracking-[0.3em] uppercase mb-2">Luxury Mod Series</h2>
+                            <h1 className="text-4xl serif text-white italic mb-2">Diamond Kit Royal</h1>
+                            <p className="text-2xl text-white font-light mb-6">$3,799 <span className="text-sm text-gray-500 ml-2">MXN</span></p>
+
+                            <p className="text-gray-400 font-light text-sm leading-relaxed mb-8 border-b border-white/10 pb-8">
+                                La máxima expresión de lujo para tu Apple Watch. Caja de acero inoxidable 316L con incrustaciones de zirconia cúbica de corte diamante. Incluye herramientas de precisión para un ajuste perfecto.
+                            </p>
+
+                            <div className="mb-8">
+                                <span className="text-xs uppercase tracking-widest text-gray-500 mb-3 block">Color de Correa</span>
+                                <div className="flex gap-3">
+                                    {['black', 'green', 'orange', 'red', 'white'].map(c => (
+                                        <button key={c} onClick={() => setColor(c)} className={`w-8 h-8 rounded-full border border-white/20 ${color === c ? 'selected-ring' : ''}`} style={{backgroundColor: c === 'black' ? '#222' : c === 'white' ? '#eee' : c}}></button>
+                                    ))}
+                                </div>
+                            </div>
+
+                            <div className="mb-10">
+                                <span className="text-xs uppercase tracking-widest text-gray-500 mb-3 block">Acabado del Marco</span>
+                                <div className="flex gap-3">
+                                    {['standard', 'gold', 'silver'].map(f => (
+                                        <button key={f} onClick={() => setFrame(f)} className={`px-4 py-2 border text-xs uppercase tracking-widest transition-all ${frame === f ? 'bg-white text-black border-white' : 'border-white/20 text-gray-400 hover:border-white'}`}>{f}</button>
+                                    ))}
+                                </div>
+                            </div>
+
+                            <button onClick={handleWhatsAppBuy} className="w-full bg-[#25D366] hover:bg-[#20bd5a] text-white py-4 flex items-center justify-center gap-3 transition-colors mb-4 font-bold tracking-widest text-sm">
+                                COMPRAR POR WHATSAPP
+                            </button>
+                            
+                            <div className="bg-[#111] p-6 border border-white/5 mt-4">
+                                <div className="flex items-center gap-3 mb-2">
+                                    <span className="text-white text-xs font-bold uppercase tracking-wider">Envío Internacional</span>
+                                </div>
+                                <p className="text-[10px] text-gray-400">
+                                    Entrega estimada: <strong>10 a 18 días hábiles</strong>. El costo se calculará al confirmar tu dirección en el chat.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        const RelatedProducts = () => (
+            <section className="py-20 bg-[#080808] border-t border-white/5 overflow-hidden">
+                <div className="container mx-auto px-6">
+                    <h3 className="text-2xl serif text-white mb-10 text-center italic">Combínalo con Essentials</h3>
+                    <div className="flex overflow-x-auto gap-6 pb-8 no-scrollbar snap-x">
+                        {essentialsImages.map((img, idx) => (
+                            <div key={idx} className="min-w-[200px] md:min-w-[250px] snap-center cursor-pointer group">
+                                <div className="aspect-[4/5] bg-[#111] overflow-hidden mb-4 relative">
+                                    <img src={img} className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" />
+                                    <span className="absolute bottom-2 left-2 text-white text-xs font-bold bg-black/50 px-2 py-1 backdrop-blur">$239 MXN</span>
+                                </div>
+                                <h4 className="text-gray-400 text-xs uppercase tracking-widest text-center group-hover:text-[#D4AF37]">Vanto Essential</h4>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            </section>
+        );
+
+        const Footer = () => (
+             <footer className="bg-[#020202] border-t border-white/5 py-12 text-center text-gray-600 text-[10px] uppercase tracking-widest">
+                &copy; 2025 Vanto. Designed for Luxury.
+            </footer>
+        );
+
+        ReactDOM.createRoot(document.getElementById('root')).render(
+            <div><Navbar /><ProductPage /><RelatedProducts /><Footer /></div>
+        );
+    </script>
+</body>
+</html>

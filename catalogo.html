@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Catálogo Completo | Vanto</title>
+    <link rel="icon" type="image/png" href="https://imgur.com/kbF7hve.png">
+    
+    <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&family=Playfair+Display:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+    
+    <style>
+        body { background-color: #050505; color: #E5E5E5; font-family: 'Lato', sans-serif; }
+        .serif { font-family: 'Playfair Display', serif; }
+        .fade-in { animation: fadeIn 0.8s ease-out forwards; opacity: 0; }
+        @keyframes fadeIn { to { opacity: 1; } }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        // --- BASE DE DATOS DE PRODUCTOS ---
+        // Desglosamos las colecciones en productos individuales
+        
+        const diamondProducts = [
+            { name: "Diamond Kit - Obsidian Black", price: "$3,799", img: "https://imgur.com/mTZrfNk.png", params: "color=black&frame=standard", desc: "Acero Negro Mate" },
+            { name: "Diamond Kit - Royal Gold Black", price: "$3,799", img: "https://imgur.com/sSVEjXx.png", params: "color=black&frame=gold", desc: "Marco Dorado 18K Style" },
+            { name: "Diamond Kit - Sterling Silver Black", price: "$3,799", img: "https://imgur.com/BVxeZjT.png", params: "color=black&frame=silver", desc: "Acero Pulido Espejo" },
+            
+            { name: "Diamond Kit - Neon Green", price: "$3,799", img: "https://imgur.com/4XHXHEr.png", params: "color=green&frame=standard", desc: "Vibrant Energy" },
+            { name: "Diamond Kit - Silver Green", price: "$3,799", img: "https://imgur.com/6uOtpc8.png", params: "color=green&frame=silver", desc: "Contraste Futurista" },
+            
+            { name: "Diamond Kit - Sunset Orange", price: "$3,799", img: "https://imgur.com/Ecasdst.png", params: "color=orange&frame=standard", desc: "Sport Luxury" },
+            { name: "Diamond Kit - Gold Orange", price: "$3,799", img: "https://imgur.com/49SZTDb.png", params: "color=orange&frame=gold", desc: "Edición Limitada" },
+            
+            { name: "Diamond Kit - Imperial Red", price: "$3,799", img: "https://imgur.com/F9maphh.png", params: "color=red&frame=standard", desc: "Pasión & Poder" },
+            { name: "Diamond Kit - Silver Red", price: "$3,799", img: "https://imgur.com/KZAkaCL.png", params: "color=red&frame=silver", desc: "Alto Impacto" },
+            
+            { name: "Diamond Kit - Pure White", price: "$3,799", img: "https://imgur.com/aJBqGPw.png", params: "color=white&frame=standard", desc: "Minimalismo Puro" },
+            { name: "Diamond Kit - Gold White", price: "$3,799", img: "https://imgur.com/RhQXnrz.png", params: "color=white&frame=gold", desc: "Elegancia Clásica" },
+        ];
+
+        const essentialProducts = [
+            { name: "Essential Strap - Azure", price: "$239", img: "https://i.imgur.com/SSK1Afy.jpeg" },
+            { name: "Essential Strap - Lava", price: "$239", img: "https://i.imgur.com/a1j8inY.jpeg" },
+            { name: "Essential Strap - Mint", price: "$239", img: "https://i.imgur.com/k9vp5hV.jpeg" },
+            { name: "Essential Strap - Slate", price: "$239", img: "https://i.imgur.com/TP7sIem.jpeg" },
+            { name: "Essential Strap - Midnight", price: "$239", img: "https://i.imgur.com/GMJMfm1.jpeg" },
+            { name: "Essential Strap - Blush", price: "$239", img: "https://i.imgur.com/0XJC1I9.jpeg" },
+            { name: "Essential Strap - Coral", price: "$239", img: "https://i.imgur.com/6JH0Wof.jpeg" },
+            { name: "Essential Strap - Sand", price: "$239", img: "https://i.imgur.com/fSdEgeF.jpeg" },
+        ];
+
+        const Navbar = () => (
+            <nav className="fixed w-full z-50 py-6 px-8 flex justify-between items-center bg-[#050505]/95 backdrop-blur border-b border-white/5">
+                <a href="index.html" className="text-gray-400 text-xs tracking-widest hover:text-white uppercase flex items-center">
+                    &larr; <span className="ml-2">Inicio</span>
+                </a>
+                <a href="index.html">
+                    <img src="https://imgur.com/JZmpC36.png" alt="VANTO" className="h-8 invert brightness-200" />
+                </a>
+                <div className="w-12"></div>
+            </nav>
+        );
+
+        const ProductCard = ({ item, isDiamond }) => (
+            <a href={`product.html${item.params ? '?' + item.params : ''}`} className="group block mb-12">
+                <div className="relative aspect-[4/5] bg-[#111] overflow-hidden mb-6 border border-white/5 group-hover:border-[#D4AF37]/50 transition-colors">
+                    <img src={item.img} alt={item.name} className="w-full h-full object-cover opacity-90 group-hover:scale-105 group-hover:opacity-100 transition-all duration-700" />
+                    
+                    {/* Badge */}
+                    {isDiamond && (
+                        <div className="absolute top-0 right-0 bg-[#D4AF37] text-black text-[9px] font-bold px-3 py-1 uppercase tracking-widest">
+                            Luxury Mod
+                        </div>
+                    )}
+                    
+                    {/* Botón flotante 'Ver' */}
+                    <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-black/20">
+                        <span className="bg-white/10 backdrop-blur text-white px-6 py-2 uppercase text-[10px] tracking-widest border border-white/30">Ver Detalles</span>
+                    </div>
+                </div>
+                
+                <div className="text-center">
+                    <h3 className="text-lg serif text-white italic mb-1 group-hover:text-[#D4AF37] transition-colors">{item.name}</h3>
+                    {item.desc && <p className="text-gray-500 text-[10px] uppercase tracking-widest mb-2">{item.desc}</p>}
+                    <p className="text-white font-medium">{item.price}</p>
+                </div>
+            </a>
+        );
+
+        const Catalog = () => (
+            <div className="pt-32 pb-24 container mx-auto px-6 min-h-screen">
+                <div className="text-center mb-24">
+                    <span className="text-[#D4AF37] text-xs font-bold tracking-[0.3em] uppercase block mb-4">El Archivo 2025</span>
+                    <h1 className="text-4xl md:text-6xl text-white serif">Catálogo Completo</h1>
+                </div>
+
+                {/* DIAMOND SECTION */}
+                <div className="mb-32">
+                    <div className="flex items-center mb-12">
+                        <div className="h-px bg-white/10 flex-grow"></div>
+                        <h2 className="px-8 text-2xl serif text-white italic">Diamond Mod Collection</h2>
+                        <div className="h-px bg-white/10 flex-grow"></div>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-8 gap-y-4">
+                        {diamondProducts.map((p, i) => <ProductCard key={i} item={p} isDiamond={true} />)}
+                    </div>
+                </div>
+
+                {/* ESSENTIALS SECTION */}
+                <div>
+                    <div className="flex items-center mb-12">
+                        <div className="h-px bg-white/10 flex-grow"></div>
+                        <h2 className="px-8 text-2xl serif text-white italic">Vanto Essentials</h2>
+                        <div className="h-px bg-white/10 flex-grow"></div>
+                    </div>
+                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-6 gap-y-4">
+                        {essentialProducts.map((p, i) => <ProductCard key={i} item={p} isDiamond={false} />)}
+                    </div>
+                </div>
+                
+            </div>
+        );
+
+        ReactDOM.createRoot(document.getElementById('root')).render(
+            <div>
+                <Navbar />
+                <Catalog />
+            </div>
+        );
+    </script>
+</body>
+</html>
