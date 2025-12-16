@@ -20,6 +20,10 @@
         @keyframes fadeIn { to { opacity: 1; transform: translateY(0); } }
         .liquid-glass { background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid rgba(255, 255, 255, 0.08); box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1); }
         .card-hover:hover { box-shadow: 0 0 25px rgba(212, 175, 55, 0.1); border-color: rgba(212, 175, 55, 0.3); }
+        .cart-drawer { transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
+        .cart-open { transform: translateX(0); }
+        .cart-closed { transform: translateX(100%); }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
     </style>
 </head>
 <body>
@@ -28,27 +32,95 @@
     <script type="text/babel">
         const { useState, useEffect } = React;
 
+        // --- ICONS ---
+        const Icons = {
+            ShoppingBag: ({ size = 24 }) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 0 1-8 0"></path></svg>,
+            X: ({ size = 24 }) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>,
+            Minus: ({ size = 16 }) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><line x1="5" y1="12" x2="19" y2="12"></line></svg>,
+            Plus: ({ size = 16 }) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>,
+            Trash: ({ size = 16 }) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+        };
+
+        // --- CART DRAWER ---
+        const CartDrawer = ({ isOpen, onClose }) => {
+            const [cart, setCart] = useState([]);
+            useEffect(() => {
+                const updateCart = () => setCart(JSON.parse(localStorage.getItem('vanto_cart') || '[]'));
+                updateCart();
+                window.addEventListener('storage', updateCart);
+                window.addEventListener('cartUpdated', updateCart);
+                return () => {
+                    window.removeEventListener('storage', updateCart);
+                    window.removeEventListener('cartUpdated', updateCart);
+                };
+            }, []);
+
+            const updateQty = (index, delta) => {
+                const newCart = [...cart];
+                newCart[index].qty = Math.max(1, (newCart[index].qty || 1) + delta);
+                localStorage.setItem('vanto_cart', JSON.stringify(newCart));
+                window.dispatchEvent(new Event('cartUpdated'));
+            };
+
+            const removeItem = (index) => {
+                const newCart = cart.filter((_, i) => i !== index);
+                localStorage.setItem('vanto_cart', JSON.stringify(newCart));
+                window.dispatchEvent(new Event('cartUpdated'));
+            };
+
+            const checkout = () => {
+                let msg = "Hola Vanto, deseo cotizar el envío para mi pedido exclusivo:%0A%0A";
+                let total = 0;
+                cart.forEach(item => {
+                    const priceNum = parseFloat(item.price.replace(/[^0-9.]/g, ''));
+                    const subtotal = priceNum * (item.qty || 1);
+                    total += subtotal;
+                    msg += `▪ ${item.name} (${item.variant}) x${item.qty || 1} - ${item.price}%0A`;
+                });
+                msg += `%0A*Total Estimado: $${total.toLocaleString()} MXN*%0A%0A--- DATOS DE ENVÍO ---%0APaís: [Escribir aquí]%0ACódigo Postal: [Escribir aquí]%0A%0AQuedo en espera de la confirmación.`;
+                window.open(`https://wa.me/message/D5Q5X3QYQ3N7N1?text=${msg}`, '_blank');
+            };
+
+            return (
+                <>
+                    <div className={`fixed inset-0 bg-black/60 backdrop-blur-sm z-[60] transition-opacity duration-300 ${isOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`} onClick={onClose}></div>
+                    <div className={`fixed top-0 right-0 h-[100dvh] w-full md:w-[450px] bg-[#0A0A0A] border-l border-white/10 z-[70] cart-drawer ${isOpen ? 'cart-open' : 'cart-closed'} flex flex-col`}>
+                        <div className="p-6 border-b border-white/10 flex justify-between items-center"><h2 className="text-xl serif text-white italic">Tu Selección</h2><button onClick={onClose} className="text-gray-400 hover:text-white"><Icons.X /></button></div>
+                        <div className="flex-1 overflow-y-auto p-6 space-y-6">
+                            {cart.length === 0 ? <div className="text-center text-gray-500 mt-20">Tu bolsa está vacía.</div> : cart.map((item, idx) => (
+                                <div key={idx} className="flex gap-4 bg-[#111] p-4 rounded-sm border border-white/5">
+                                    <img src={item.img} className="w-20 h-24 object-cover rounded-sm" />
+                                    <div className="flex-1">
+                                        <div className="flex justify-between items-start mb-1"><h3 className="text-sm text-white font-medium">{item.name}</h3><button onClick={() => removeItem(idx)} className="text-gray-600 hover:text-red-500"><Icons.Trash /></button></div>
+                                        <p className="text-[10px] text-gray-400 uppercase tracking-wider mb-3">{item.variant}</p>
+                                        <div className="flex justify-between items-center"><p className="text-sm text-[#D4AF37]">{item.price}</p><div className="flex items-center gap-3 border border-white/10 px-2 py-1 rounded-sm"><button onClick={() => updateQty(idx, -1)} className="text-gray-400 hover:text-white"><Icons.Minus /></button><span className="text-xs text-white w-4 text-center">{item.qty || 1}</span><button onClick={() => updateQty(idx, 1)} className="text-gray-400 hover:text-white"><Icons.Plus /></button></div></div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                        <div className="p-6 border-t border-white/10 bg-[#050505] mb-safe"><button onClick={checkout} disabled={cart.length === 0} className="w-full bg-[#D4AF37] hover:bg-white text-black py-4 text-xs font-bold uppercase tracking-[0.2em] transition-colors disabled:opacity-50">Solicitar Cotización</button><p className="text-[9px] text-gray-600 text-center mt-3 uppercase tracking-widest">Pago y envío coordinado vía WhatsApp</p></div>
+                    </div>
+                </>
+            );
+        };
+
         // --- BASE DE DATOS MAESTRA ---
-        
-        // 1. L'ÉDITION ROYALE (Diamond)
         const diamondProducts = [
             { id: "dk-black-std", type: "diamond", color: "black", name: "Royal Obsidian", price: "$3,799", img: "https://imgur.com/mTZrfNk.png", desc: "Acero Negro Mate" },
             { id: "dk-black-gold", type: "diamond", color: "gold", name: "Royal Gold Noir", price: "$3,799", img: "https://imgur.com/sSVEjXx.png", desc: "Marco Oro 18K Style" },
-            { id: "dk-black-slv", type: "diamond", color: "silver", name: "Royal Silver Noir", price: "$3,799", img: "https://imgur.com/BVxeZjT.png", desc: "Plata Espejo" },
-            { id: "dk-red-std", type: "diamond", color: "red", name: "Imperial Crimson", price: "$3,799", img: "https://imgur.com/F9maphh.png", desc: "Rojo Intenso" },
-            { id: "dk-red-gold", type: "diamond", color: "gold", name: "Imperial Gold Red", price: "$3,799", img: "https://imgur.com/iEo5vH6.png", desc: "Lujo Asiático" },
-            { id: "dk-red-slv", type: "diamond", color: "silver", name: "Imperial Silver Red", price: "$3,799", img: "https://imgur.com/KZAkaCL.png", desc: "Alto Contraste" },
-            { id: "dk-white-std", type: "diamond", color: "white", name: "Arctic Pure", price: "$3,799", img: "https://imgur.com/aJBqGPw.png", desc: "Blanco Minimalista" },
-            { id: "dk-white-gold", type: "diamond", color: "gold", name: "Arctic Gold", price: "$3,799", img: "https://imgur.com/RhQXnrz.png", desc: "Elegancia Pura" },
-            { id: "dk-white-slv", type: "diamond", color: "silver", name: "Arctic Silver", price: "$3,799", img: "https://imgur.com/XXZWf5V.png", desc: "Clean Look" },
-            { id: "dk-org-std", type: "diamond", color: "orange", name: "Sunset Sport", price: "$3,799", img: "https://imgur.com/Ecasdst.png", desc: "Naranja Vibrante" },
-            { id: "dk-org-gold", type: "diamond", color: "gold", name: "Sunset Gold", price: "$3,799", img: "https://imgur.com/49SZTDb.png", desc: "Exclusivo" },
-            { id: "dk-org-slv", type: "diamond", color: "silver", name: "Sunset Silver", price: "$3,799", img: "https://imgur.com/pDk7Gkq.png", desc: "Moderno" },
-            { id: "dk-grn-std", type: "diamond", color: "green", name: "Neon Venom", price: "$3,799", img: "https://imgur.com/4XHXHEr.png", desc: "Verde Ácido" },
-            { id: "dk-grn-slv", type: "diamond", color: "silver", name: "Neon Silver", price: "$3,799", img: "https://imgur.com/6uOtpc8.png", desc: "Futurista" },
+            { id: "dk-black-slv", type: "diamond", name: "Royal Silver Noir", price: "$3,799", img: "https://imgur.com/BVxeZjT.png", desc: "Plata Espejo" },
+            { id: "dk-red-std", type: "diamond", name: "Imperial Crimson", price: "$3,799", img: "https://imgur.com/F9maphh.png", desc: "Rojo Intenso" },
+            { id: "dk-red-gold", type: "diamond", name: "Imperial Gold Red", price: "$3,799", img: "https://imgur.com/iEo5vH6.png", desc: "Lujo Asiático" },
+            { id: "dk-red-slv", type: "diamond", name: "Imperial Silver Red", price: "$3,799", img: "https://imgur.com/KZAkaCL.png", desc: "Alto Contraste" },
+            { id: "dk-white-std", type: "diamond", name: "Arctic Pure", price: "$3,799", img: "https://imgur.com/aJBqGPw.png", desc: "Blanco Minimalista" },
+            { id: "dk-white-gold", type: "diamond", name: "Arctic Gold", price: "$3,799", img: "https://imgur.com/RhQXnrz.png", desc: "Elegancia Pura" },
+            { id: "dk-white-slv", type: "diamond", name: "Arctic Silver", price: "$3,799", img: "https://imgur.com/XXZWf5V.png", desc: "Clean Look" },
+            { id: "dk-org-std", type: "diamond", name: "Sunset Sport", price: "$3,799", img: "https://imgur.com/Ecasdst.png", desc: "Naranja Vibrante" },
+            { id: "dk-org-gold", type: "diamond", name: "Sunset Gold", price: "$3,799", img: "https://imgur.com/49SZTDb.png", desc: "Exclusivo" },
+            { id: "dk-org-slv", type: "diamond", name: "Sunset Silver", price: "$3,799", img: "https://imgur.com/pDk7Gkq.png", desc: "Moderno" },
+            { id: "dk-grn-std", type: "diamond", name: "Neon Venom", price: "$3,799", img: "https://imgur.com/4XHXHEr.png", desc: "Verde Ácido" },
+            { id: "dk-grn-slv", type: "diamond", name: "Neon Silver", price: "$3,799", img: "https://imgur.com/6uOtpc8.png", desc: "Futurista" },
         ];
-
-        // 2. LEATHER ATELIER
         const leatherProducts = [
             { id: "lth-rose-wine", type: "leather", color: "pink", name: "Rouge Rosé", price: "$450", img: "https://i.imgur.com/oetFG2D.jpeg", desc: "Rosa con detalles Vino" },
             { id: "lth-org-blue", type: "leather", color: "orange", name: "Riviera Sunset", price: "$450", img: "https://i.imgur.com/DbfG4LG.jpeg", desc: "Naranja y Azul" },
@@ -57,26 +129,24 @@
             { id: "lth-prp", type: "leather", color: "purple", name: "Lavender Mist", price: "$450", img: "https://i.imgur.com/O8p2vAQ.jpeg", desc: "Morado Claro" },
             { id: "lth-wht", type: "leather", color: "white", name: "Arctic Pure", price: "$450", img: "https://i.imgur.com/kQjfrpr.jpeg", desc: "Blanco Absoluto" },
             { id: "lth-coff-drk", type: "leather", color: "brown", name: "Espresso Deep", price: "$450", img: "https://i.imgur.com/FwCzKRU.jpeg", desc: "Café Oscuro" },
-            { id: "lth-tri-blue", type: "leather", color: "blue", name: "Aegean Tricolor", price: "$299", img: "https://i.imgur.com/6A8YnPh.jpeg", desc: "Azules y Crema" },
+            { id: "lth-tri-blue", type: "leather", color: "blue", name: "Aegean Tricolor", price: "$299", img: "https://i.imgur.com/6A8YnPh.jpeg", desc: "Azules y Crema" }, 
             { id: "lth-coff", type: "leather", color: "brown", name: "Chestnut Classic", price: "$450", img: "https://i.imgur.com/GzkT5e9.jpeg", desc: "Café Medio" },
-            { id: "lth-blu-wine", type: "leather", color: "blue", name: "Royal Bordeaux", price: "$299", img: "https://i.imgur.com/mIrorgs.jpeg", desc: "Azul y Vino" },
-            { id: "lth-tri-org", type: "leather", color: "orange", name: "Mediterranean", price: "$299", img: "https://i.imgur.com/tHUvBYW.jpeg", desc: "Azul, Crema, Naranja" },
+            { id: "lth-blu-wine", type: "leather", color: "blue", name: "Royal Bordeaux", price: "$299", img: "https://i.imgur.com/mIrorgs.jpeg", desc: "Azul y Vino" }, 
+            { id: "lth-tri-org", type: "leather", color: "orange", name: "Mediterranean Voyage", price: "$299", img: "https://i.imgur.com/tHUvBYW.jpeg", desc: "Azul, Crema, Naranja" }, 
             { id: "lth-blu-drk", type: "leather", color: "blue", name: "Abyss Blue", price: "$450", img: "https://i.imgur.com/GnF33co.jpeg", desc: "Azul Oscuro" },
-            { id: "lth-titan-org", type: "leather", color: "orange", name: "Titanium Orange", price: "$450", img: "https://i.imgur.com/t6dEVhU.jpeg", desc: "Naranja iPhone 17 Style" },
-            { id: "lth-pink-crm", type: "leather", color: "pink", name: "Blush Cream", price: "$299", img: "https://i.imgur.com/USnTQWe.jpeg", desc: "Rosa y Crema" },
-            { id: "lth-red-wine", type: "leather", color: "red", name: "Burgundy Grand", price: "$450", img: "https://i.imgur.com/6XdpRhE.jpeg", desc: "Rojo Vino" },
-            { id: "lth-nvy-hr", type: "leather", color: "blue", name: "Nautical Heritage", price: "$259", img: "https://i.imgur.com/GR0TTLI.jpeg", desc: "Azul Marino / Interior Café" },
-            { id: "lth-org-crm", type: "leather", color: "orange", name: "Creamsicle Luxe", price: "$299", img: "https://i.imgur.com/Z6skV8g.jpeg", desc: "Naranja y Crema" },
-            { id: "lth-tri-ylw", type: "leather", color: "yellow", name: "Tropical Sunrise", price: "$315", img: "https://i.imgur.com/ibE0yCh.jpeg", desc: "Amarillo, Naranja, Rosa" },
-            { id: "lth-ylw", type: "leather", color: "yellow", name: "Canary Vivid", price: "$450", img: "https://i.imgur.com/A4GyVnC.jpeg", desc: "Amarillo Intenso" },
-            { id: "lth-grn", type: "leather", color: "green", name: "Verde Bottega", price: "$450", img: "https://i.imgur.com/JbjjzEk.jpeg", desc: "Verde Puro" },
-            { id: "lth-blk-drk", type: "leather", color: "black", name: "Obsidian Shadow", price: "$450", img: "https://i.imgur.com/sZj8ia6.jpeg", desc: "Negro Profundo" },
-            { id: "lth-panda", type: "leather", color: "white", name: "Panda Contrast", price: "$299", img: "https://i.imgur.com/6KXCzdj.jpeg", desc: "Negro y Blanco" },
-            { id: "lth-cyn", type: "leather", color: "blue", name: "Electric Cyan", price: "$450", img: "https://i.imgur.com/y2V4xRx.jpeg", desc: "Azul Chicle" },
-            { id: "lth-old", type: "leather", color: "brown", name: "Heritage Tan", price: "$450", img: "https://i.imgur.com/666Nokk.jpeg", desc: "Old Money Style" },
+            { id: "lth-titan-org", type: "leather", name: "Titanium Orange", price: "$450", img: "https://i.imgur.com/t6dEVhU.jpeg", desc: "Naranja iPhone 17 Style" },
+            { id: "lth-pink-crm", type: "leather", name: "Blush Cream", price: "$299", img: "https://i.imgur.com/USnTQWe.jpeg", desc: "Rosa y Crema" }, 
+            { id: "lth-red-wine", type: "leather", name: "Burgundy Grand", price: "$450", img: "https://i.imgur.com/6XdpRhE.jpeg", desc: "Rojo Vino" },
+            { id: "lth-nvy-hr", type: "leather", name: "Nautical Heritage", price: "$259", img: "https://i.imgur.com/GR0TTLI.jpeg", desc: "Azul Marino / Interior Café" }, 
+            { id: "lth-org-crm", type: "leather", name: "Creamsicle Luxe", price: "$299", img: "https://i.imgur.com/Z6skV8g.jpeg", desc: "Naranja y Crema" }, 
+            { id: "lth-tri-ylw", type: "leather", name: "Tropical Sunrise", price: "$315", img: "https://i.imgur.com/ibE0yCh.jpeg", desc: "Amarillo, Naranja, Rosa" }, 
+            { id: "lth-ylw", type: "leather", name: "Canary Vivid", price: "$450", img: "https://i.imgur.com/A4GyVnC.jpeg", desc: "Amarillo Intenso" },
+            { id: "lth-grn", type: "leather", name: "Verde Bottega", price: "$450", img: "https://i.imgur.com/JbjjzEk.jpeg", desc: "Verde Puro" },
+            { id: "lth-blk-drk", type: "leather", name: "Obsidian Shadow", price: "$450", img: "https://i.imgur.com/sZj8ia6.jpeg", desc: "Negro Profundo" },
+            { id: "lth-panda", type: "leather", name: "Panda Contrast", price: "$299", img: "https://i.imgur.com/6KXCzdj.jpeg", desc: "Negro y Blanco" }, 
+            { id: "lth-cyn", type: "leather", name: "Electric Cyan", price: "$450", img: "https://i.imgur.com/y2V4xRx.jpeg", desc: "Azul Chicle" },
+            { id: "lth-old", type: "leather", name: "Heritage Tan", price: "$450", img: "https://i.imgur.com/666Nokk.jpeg", desc: "Old Money Style" },
         ];
-
-        // 3. L'ACIER MODERNE
         const steelProducts = [
             { id: "stl-stripe-blk", type: "steel", color: "silver", name: "Métal Duo Noir", price: "$399", img: "https://i.imgur.com/GtKHK1l.jpeg", desc: "Plata con línea negra" },
             { id: "stl-stripe-gld", type: "steel", color: "gold", name: "Métal Duo Or", price: "$399", img: "https://i.imgur.com/OuDfSjd.jpeg", desc: "Plata con línea dorada" },
@@ -93,8 +163,6 @@
             { id: "stl-pnk", type: "steel", color: "pink", name: "Rose Métal", price: "$359", img: "https://i.imgur.com/5ove4ku.jpeg", desc: "Rosa Suave" },
             { id: "stl-slv", type: "steel", color: "silver", name: "Argent Pur", price: "$359", img: "https://i.imgur.com/PnYTzC9.jpeg", desc: "Plata Clásica" },
         ];
-
-        // 4. L'ARMURE CARBONE (Phone Cases)
         const caseProducts = [
             { id: "case-monaco", type: "case", color: "grey", name: "Monaco GT", price: "$299", img: "https://i.imgur.com/XwgjP4b.jpeg", desc: "Gris Sport con Franja" },
             { id: "case-espresso", type: "case", color: "brown", name: "Espresso Duo", price: "$299", img: "https://i.imgur.com/JfOHQ3y.jpeg", desc: "Café Bitono" },
@@ -108,13 +176,35 @@
 
         const allProducts = [...diamondProducts, ...leatherProducts, ...steelProducts, ...caseProducts];
 
-        const Navbar = () => (
-            <nav className="fixed w-full z-50 py-6 px-8 flex justify-between items-center bg-[#050505]/95 backdrop-blur border-b border-white/5">
-                <a href="index.html" className="text-gray-400 text-xs tracking-widest hover:text-white uppercase flex items-center">&larr; <span className="ml-2">Inicio</span></a>
-                <a href="index.html"><img src="https://imgur.com/JZmpC36.png" alt="VANTO" className="h-8 md:h-10 invert brightness-200" /></a>
-                <div className="w-12"></div>
-            </nav>
-        );
+        const Navbar = ({ onOpenCart }) => {
+            const [cartCount, setCartCount] = useState(0);
+            useEffect(() => {
+                const update = () => setCartCount(JSON.parse(localStorage.getItem('vanto_cart') || '[]').length);
+                update();
+                window.addEventListener('cartUpdated', update);
+                window.addEventListener('storage', update);
+                return () => {
+                    window.removeEventListener('cartUpdated', update);
+                    window.removeEventListener('storage', update);
+                };
+            }, []);
+
+            return (
+                <nav className="fixed w-full z-50 py-6 px-8 flex justify-between items-center bg-[#050505]/95 backdrop-blur border-b border-white/5 top-0 left-0 right-0">
+                    <div className="flex items-center gap-8">
+                        <a href="index.html" className="text-gray-400 text-xs tracking-widest hover:text-white uppercase transition-colors">Inicio</a>
+                        <a href="catalogo.html" className="text-gray-400 text-xs tracking-widest hover:text-white uppercase transition-colors">Catálogo</a>
+                    </div>
+                    <a href="index.html"><img src="https://imgur.com/JZmpC36.png" alt="VANTO" className="h-8 md:h-10 invert brightness-200" /></a>
+                    <div className="flex items-center gap-6 md:gap-8">
+                        <button onClick={onOpenCart} className="relative text-white hover:text-[#D4AF37] transition-colors p-2">
+                            <Icons.ShoppingBag size={22} />
+                            {cartCount > 0 && <span className="absolute top-0 right-0 bg-[#D4AF37] text-black text-[9px] font-bold w-4 h-4 rounded-full flex items-center justify-center animate-bounce">{cartCount}</span>}
+                        </button>
+                    </div>
+                </nav>
+            );
+        };
 
         const ProductCard = ({ item }) => {
             const url = `producto.html?id=${item.id}&type=${item.type}`;
@@ -183,7 +273,18 @@
             );
         };
 
-        ReactDOM.createRoot(document.getElementById('root')).render(<div><Navbar /><Catalog /></div>);
+        const App = () => {
+            const [isCartOpen, setIsCartOpen] = useState(false);
+            return (
+                <div>
+                    <Navbar onOpenCart={() => setIsCartOpen(true)} />
+                    <Catalog />
+                    <CartDrawer isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />
+                </div>
+            );
+        };
+
+        ReactDOM.createRoot(document.getElementById('root')).render(<App />);
     </script>
 </body>
 </html>

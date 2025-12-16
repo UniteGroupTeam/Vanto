@@ -35,6 +35,11 @@
         .marquee-track:hover { animation-play-state: paused; }
         .marquee-reverse .marquee-track { animation-direction: reverse; }
         @keyframes scroll { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
+
+        /* Cart Slide In */
+        .cart-drawer { transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
+        .cart-open { transform: translateX(0); }
+        .cart-closed { transform: translateX(100%); }
     </style>
 </head>
 <body>
@@ -44,30 +49,21 @@
         const { useState, useEffect } = React;
 
         // --- ICONS ---
-        const ShoppingBag = ({ size = 24 }) => (
-            <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 0 1-8 0"></path></svg>
-        );
-        const PlaneIcon = ({ size = 24, className }) => <svg className={className} width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M22 2L11 13"></path><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>;
-        const ShieldCheckIcon = ({ size = 24, className }) => <svg className={className} width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path><path d="M9 12l2 2 4-4"></path></svg>;
-        const PackageIcon = ({ size = 24, className }) => <svg className={className} width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><line x1="16.5" y1="9.4" x2="7.5" y2="4.21"></line><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>;
+        const Icons = {
+            ShoppingBag: ({ size = 24 }) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 0 1-8 0"></path></svg>,
+            X: ({ size = 24 }) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>,
+            Minus: ({ size = 16 }) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><line x1="5" y1="12" x2="19" y2="12"></line></svg>,
+            Plus: ({ size = 16 }) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>,
+            Trash: ({ size = 16 }) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>,
+            Plane: ({ size = 24 }) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M22 2L11 13"></path><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>,
+            Shield: ({ size = 24 }) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path><path d="M9 12l2 2 4-4"></path></svg>,
+            Package: ({ size = 24 }) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><line x1="16.5" y1="9.4" x2="7.5" y2="4.21"></line><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
+        };
 
-        // --- IMÁGENES COLLAGE ---
+        // --- IMÁGENES ---
         const kitImages = ["https://i.imgur.com/gYuiWXL.jpeg", "https://i.imgur.com/HK0ynA8.jpeg", "https://i.imgur.com/NbilMHU.jpeg", "https://i.imgur.com/cyAealH.jpeg"];
-        const strapImages = [
-            "https://i.imgur.com/GtKHK1l.jpeg", "https://i.imgur.com/OuDfSjd.jpeg", "https://i.imgur.com/XdOZWKN.jpeg", "https://i.imgur.com/C9pzKAo.jpeg",
-            "https://i.imgur.com/Gt61Uh4.jpeg", "https://i.imgur.com/mzdCuS3.jpeg", "https://i.imgur.com/T9C7BD0.jpeg", "https://i.imgur.com/VHYFYQd.jpeg",
-            "https://i.imgur.com/ZOtEhOk.jpeg", "https://i.imgur.com/1ZBYpJW.jpeg", "https://i.imgur.com/eHopCts.jpeg", "https://i.imgur.com/03leYrR.jpeg",
-            "https://i.imgur.com/LDfyiVU.jpeg", "https://i.imgur.com/ZYYbG8r.jpeg", "https://i.imgur.com/89YvJM0.jpeg", "https://i.imgur.com/Mk0PhI0.jpeg",
-            "https://i.imgur.com/UvC5oCu.jpeg", "https://i.imgur.com/81Y2g0p.jpeg", "https://i.imgur.com/SXNfJPZ.jpeg", "https://i.imgur.com/sIaJ9Jn.jpeg",
-            "https://i.imgur.com/zvkaXrT.jpeg", "https://i.imgur.com/OFF74lx.jpeg", "https://i.imgur.com/PBf7HXq.jpeg", "https://i.imgur.com/pFLAjMt.jpeg"
-        ];
-        const caseImages = [
-            "https://i.imgur.com/ChrgBN5.jpeg", "https://i.imgur.com/VyuONua.jpeg", "https://i.imgur.com/gii0MRk.jpeg", "https://i.imgur.com/zMXi3pI.jpeg",
-            "https://i.imgur.com/rJqx2Bd.jpeg", "https://i.imgur.com/DhyUWRm.jpeg", "https://i.imgur.com/Ad4mjIA.jpeg", "https://i.imgur.com/mcLxDao.jpeg",
-            "https://i.imgur.com/YTMrucR.jpeg", "https://i.imgur.com/5PZLccl.jpeg", "https://i.imgur.com/FepQRmL.jpeg", "https://i.imgur.com/knG4kvL.jpeg",
-            "https://i.imgur.com/Avwlc5z.jpeg", "https://i.imgur.com/xmg0Emt.jpeg", "https://i.imgur.com/sXx6ADH.jpeg", "https://i.imgur.com/ZhIR6cO.jpeg",
-            "https://i.imgur.com/0GeDFBe.jpeg", "https://i.imgur.com/ZamQ1AJ.jpeg", "https://i.imgur.com/0SFdAou.jpeg", "https://i.imgur.com/2wbzhFG.jpeg"
-        ];
+        const strapImages = ["https://i.imgur.com/GtKHK1l.jpeg", "https://i.imgur.com/OuDfSjd.jpeg", "https://i.imgur.com/XdOZWKN.jpeg", "https://i.imgur.com/C9pzKAo.jpeg", "https://i.imgur.com/Gt61Uh4.jpeg", "https://i.imgur.com/mzdCuS3.jpeg", "https://i.imgur.com/T9C7BD0.jpeg", "https://i.imgur.com/VHYFYQd.jpeg"];
+        const caseImages = ["https://i.imgur.com/ChrgBN5.jpeg", "https://i.imgur.com/VyuONua.jpeg", "https://i.imgur.com/gii0MRk.jpeg", "https://i.imgur.com/zMXi3pI.jpeg", "https://i.imgur.com/rJqx2Bd.jpeg", "https://i.imgur.com/DhyUWRm.jpeg"];
 
         // --- CAROUSEL DATA (MIXED) ---
         const mixedCollection = [
@@ -81,25 +77,115 @@
             { id: 'case-nordic', type: 'case', name: "Nordic Peaks", price: "$329", img: "https://i.imgur.com/E20tmfO.jpeg", tag: "Art Series" },
         ];
 
-        const Navbar = () => {
+        // --- COMPONENTE CARRITO GLOBAL ---
+        const CartDrawer = ({ isOpen, onClose }) => {
+            const [cart, setCart] = useState([]);
+
+            useEffect(() => {
+                const updateCart = () => setCart(JSON.parse(localStorage.getItem('vanto_cart') || '[]'));
+                updateCart();
+                window.addEventListener('storage', updateCart);
+                window.addEventListener('cartUpdated', updateCart);
+                return () => {
+                    window.removeEventListener('storage', updateCart);
+                    window.removeEventListener('cartUpdated', updateCart);
+                };
+            }, []);
+
+            const updateQty = (index, delta) => {
+                const newCart = [...cart];
+                newCart[index].qty = Math.max(1, (newCart[index].qty || 1) + delta);
+                localStorage.setItem('vanto_cart', JSON.stringify(newCart));
+                window.dispatchEvent(new Event('cartUpdated'));
+            };
+
+            const removeItem = (index) => {
+                const newCart = cart.filter((_, i) => i !== index);
+                localStorage.setItem('vanto_cart', JSON.stringify(newCart));
+                window.dispatchEvent(new Event('cartUpdated'));
+            };
+
+            const checkout = () => {
+                let msg = "Hola Vanto, deseo cotizar el envío para mi pedido exclusivo:%0A%0A";
+                let total = 0;
+                cart.forEach(item => {
+                    const priceNum = parseFloat(item.price.replace(/[^0-9.]/g, ''));
+                    const subtotal = priceNum * (item.qty || 1);
+                    total += subtotal;
+                    msg += `▪ ${item.name} (${item.variant}) x${item.qty || 1} - ${item.price}%0A`;
+                });
+                msg += `%0A*Total Estimado: $${total.toLocaleString()} MXN*%0A%0A--- DATOS DE ENVÍO ---%0APaís: [Escribir aquí]%0ACódigo Postal: [Escribir aquí]%0A%0AQuedo en espera de la confirmación.`;
+                window.open(`https://wa.me/message/D5Q5X3QYQ3N7N1?text=${msg}`, '_blank');
+            };
+
+            return (
+                <>
+                    <div className={`fixed inset-0 bg-black/60 backdrop-blur-sm z-[60] transition-opacity duration-300 ${isOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`} onClick={onClose}></div>
+                    <div className={`fixed top-0 right-0 h-[100dvh] w-full md:w-[450px] bg-[#0A0A0A] border-l border-white/10 z-[70] cart-drawer ${isOpen ? 'cart-open' : 'cart-closed'} flex flex-col`}>
+                        <div className="p-6 border-b border-white/10 flex justify-between items-center">
+                            <h2 className="text-xl serif text-white italic">Tu Selección</h2>
+                            <button onClick={onClose} className="text-gray-400 hover:text-white"><Icons.X /></button>
+                        </div>
+                        <div className="flex-1 overflow-y-auto p-6 space-y-6">
+                            {cart.length === 0 ? (
+                                <div className="text-center text-gray-500 mt-20">Tu bolsa está vacía.</div>
+                            ) : (
+                                cart.map((item, idx) => (
+                                    <div key={idx} className="flex gap-4 bg-[#111] p-4 rounded-sm border border-white/5">
+                                        <img src={item.img} className="w-20 h-24 object-cover rounded-sm" />
+                                        <div className="flex-1">
+                                            <div className="flex justify-between items-start mb-1">
+                                                <h3 className="text-sm text-white font-medium">{item.name}</h3>
+                                                <button onClick={() => removeItem(idx)} className="text-gray-600 hover:text-red-500"><Icons.Trash /></button>
+                                            </div>
+                                            <p className="text-[10px] text-gray-400 uppercase tracking-wider mb-3">{item.variant}</p>
+                                            <div className="flex justify-between items-center">
+                                                <p className="text-sm text-[#D4AF37]">{item.price}</p>
+                                                <div className="flex items-center gap-3 border border-white/10 px-2 py-1 rounded-sm">
+                                                    <button onClick={() => updateQty(idx, -1)} className="text-gray-400 hover:text-white"><Icons.Minus /></button>
+                                                    <span className="text-xs text-white w-4 text-center">{item.qty || 1}</span>
+                                                    <button onClick={() => updateQty(idx, 1)} className="text-gray-400 hover:text-white"><Icons.Plus /></button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))
+                            )}
+                        </div>
+                        <div className="p-6 border-t border-white/10 bg-[#050505] mb-safe">
+                            <button onClick={checkout} disabled={cart.length === 0} className="w-full bg-[#D4AF37] hover:bg-white text-black py-4 text-xs font-bold uppercase tracking-[0.2em] transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                                Solicitar Cotización
+                            </button>
+                            <p className="text-[9px] text-gray-600 text-center mt-3 uppercase tracking-widest">Pago y envío coordinado vía WhatsApp</p>
+                        </div>
+                    </div>
+                </>
+            );
+        };
+
+        const Navbar = ({ onOpenCart }) => {
             const [cartCount, setCartCount] = useState(0);
             useEffect(() => {
                 const update = () => setCartCount(JSON.parse(localStorage.getItem('vanto_cart') || '[]').length);
                 update();
+                window.addEventListener('cartUpdated', update);
                 window.addEventListener('storage', update);
-                return () => window.removeEventListener('storage', update);
+                return () => {
+                    window.removeEventListener('cartUpdated', update);
+                    window.removeEventListener('storage', update);
+                };
             }, []);
 
             return (
-                <nav className="fixed w-full z-50 py-6 px-6 md:px-12 flex justify-between items-center bg-gradient-to-b from-black/90 to-transparent">
+                <nav className="fixed w-full z-50 py-6 px-8 flex justify-between items-center bg-[#050505]/95 backdrop-blur border-b border-white/5 top-0 left-0 right-0">
                     <div className="hidden md:block w-32"></div>
                     <a href="index.html" className="block"><img src="https://imgur.com/JZmpC36.png" alt="VANTO" className="h-10 md:h-14 object-contain hover:opacity-90 transition-opacity" /></a>
                     <div className="flex items-center gap-6 md:gap-8">
                         <a href="catalogo.html" className="text-white hover:text-[#D4AF37] transition-colors flex items-center gap-2 group">
                             <span className="text-[10px] md:text-xs uppercase tracking-[0.2em] group-hover:underline underline-offset-4">Catálogo</span>
                         </a>
-                        <button className="relative text-white hover:text-[#D4AF37] transition-colors p-2">
-                            <ShoppingBag size={22} />
+                        <button onClick={onOpenCart} type="button" className="relative text-white hover:text-[#D4AF37] transition-colors p-2 cursor-pointer">
+                            <Icons.ShoppingBag size={22} />
                             {cartCount > 0 && <span className="absolute top-0 right-0 bg-[#D4AF37] text-black text-[9px] font-bold w-4 h-4 rounded-full flex items-center justify-center animate-bounce">{cartCount}</span>}
                         </button>
                     </div>
@@ -182,58 +268,30 @@
         );
 
         const LogisticsAndGallery = () => {
-            // Elegant Row (Kits Only)
-            const doubleKits = [...kitImages, ...kitImages, ...kitImages, ...kitImages]; 
-            
-            // Mixed Rows (Interleaved Straps + Cases)
-            const mixArrays = (arr1, arr2) => {
-                const mixed = [];
-                const maxLength = Math.max(arr1.length, arr2.length);
-                for (let i = 0; i < maxLength; i++) {
-                    if (i < arr1.length) mixed.push(arr1[i]);
-                    if (i < arr2.length) mixed.push(arr2[i]);
-                }
-                return mixed;
-            };
-            
-            const combined = mixArrays(strapImages, caseImages);
-            const doubleMixed1 = [...combined, ...combined]; 
-            const doubleMixed2 = [...combined.reverse(), ...combined];
+            const doubleKits = [...kitImages, ...kitImages, ...kitImages];
+            // Mix arrays for dynamic collage
+            const mixed = [...strapImages, ...caseImages].sort(() => Math.random() - 0.5);
+            const doubleMixed1 = [...mixed, ...mixed];
+            const doubleMixed2 = [...mixed.reverse(), ...mixed];
 
             return (
                 <section className="bg-[#050505] pt-32 pb-12 overflow-hidden border-t border-white/5">
                     <div className="container mx-auto px-6 mb-24">
                         <div className="text-center mb-20"><span className="text-[#D4AF37] text-xs font-bold tracking-[0.3em] uppercase mb-4 block">Confianza & Estilo</span><h2 className="text-4xl text-white serif">Vanto World</h2></div>
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-24 border-b border-white/5 pb-16">
-                            <div className="bg-[#080808] p-8 border border-white/5 text-center group hover:border-[#D4AF37]/30 transition-colors"><div className="flex justify-center mb-6 text-[#D4AF37]"><PlaneIcon size={32} /></div><h3 className="text-lg serif text-white mb-3">Envíos Globales</h3><p className="text-gray-500 text-xs leading-loose font-light">DHL, FedEx y UPS. 10-18 días hábiles.</p></div>
-                            <div className="bg-[#080808] p-8 border border-white/5 text-center group hover:border-[#D4AF37]/30 transition-colors"><div className="flex justify-center mb-6 text-[#D4AF37]"><PackageIcon size={32} /></div><h3 className="text-lg serif text-white mb-3">Embalaje Seguro</h3><p className="text-gray-500 text-xs leading-loose font-light">Protección rígida reforzada.</p></div>
-                            <div className="bg-[#080808] p-8 border border-white/5 text-center group hover:border-[#D4AF37]/30 transition-colors"><div className="flex justify-center mb-6 text-[#D4AF37]"><ShieldCheckIcon size={32} /></div><h3 className="text-lg serif text-white mb-3">Garantía Vanto</h3><p className="text-gray-500 text-xs leading-loose font-light">Protección total al comprador.</p></div>
+                            <div className="bg-[#080808] p-8 border border-white/5 text-center group hover:border-[#D4AF37]/30 transition-colors"><div className="flex justify-center mb-6 text-[#D4AF37]"><Icons.Plane size={32} /></div><h3 className="text-lg serif text-white mb-3">Envíos Globales</h3><p className="text-gray-500 text-xs leading-loose font-light">DHL, FedEx y UPS. 10-18 días hábiles.</p></div>
+                            <div className="bg-[#080808] p-8 border border-white/5 text-center group hover:border-[#D4AF37]/30 transition-colors"><div className="flex justify-center mb-6 text-[#D4AF37]"><Icons.Package size={32} /></div><h3 className="text-lg serif text-white mb-3">Embalaje Seguro</h3><p className="text-gray-500 text-xs leading-loose font-light">Protección rígida reforzada.</p></div>
+                            <div className="bg-[#080808] p-8 border border-white/5 text-center group hover:border-[#D4AF37]/30 transition-colors"><div className="flex justify-center mb-6 text-[#D4AF37]"><Icons.Shield size={32} /></div><h3 className="text-lg serif text-white mb-3">Garantía Vanto</h3><p className="text-gray-500 text-xs leading-loose font-light">Protección total al comprador.</p></div>
                         </div>
                     </div>
-                    
                     <div className="space-y-8">
-                        {/* 1. L'Élégance (Kits) - Elegante & Separado */}
                         <div>
                             <p className="text-center text-[#D4AF37] text-[10px] uppercase tracking-[0.4em] mb-4">L'Édition Royale</p>
-                            <div className="marquee-container opacity-100 hover:opacity-90 transition-opacity duration-500">
-                                <div className="marquee-track gap-6">
-                                    {doubleKits.map((img, i) => <div key={i} className="w-[350px] h-[250px] bg-[#111] border border-[#D4AF37]/20 shrink-0 overflow-hidden rounded-sm"><img src={img} className="w-full h-full object-cover hover:scale-105 transition-transform duration-1000" loading="lazy" /></div>)}
-                                </div>
-                            </div>
+                            <div className="marquee-container opacity-100 hover:opacity-90 transition-opacity duration-500"><div className="marquee-track gap-6">{doubleKits.map((img, i) => <div key={i} className="w-[350px] h-[250px] bg-[#111] border border-[#D4AF37]/20 shrink-0 overflow-hidden rounded-sm"><img src={img} className="w-full h-full object-cover hover:scale-105 transition-transform duration-1000" loading="lazy" /></div>)}</div></div>
                         </div>
-
-                        {/* 2. Le Mix (Straps & Cases) - Mezclado & Dinámico */}
-                        <div className="opacity-60 hover:opacity-100 transition-opacity duration-500 space-y-4">
-                            <div className="marquee-container marquee-reverse">
-                                <div className="marquee-track gap-4">
-                                    {doubleMixed1.map((img, i) => <div key={i} className="w-[200px] h-[200px] bg-[#111] border border-white/10 shrink-0 overflow-hidden rounded-sm"><img src={img} className="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-500" loading="lazy" /></div>)}
-                                </div>
-                            </div>
-                            <div className="marquee-container">
-                                <div className="marquee-track gap-4">
-                                    {doubleMixed2.map((img, i) => <div key={i} className="w-[200px] h-[200px] bg-[#111] border border-white/10 shrink-0 overflow-hidden rounded-sm"><img src={img} className="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-500" loading="lazy" /></div>)}
-                                </div>
-                            </div>
+                        <div className="space-y-4">
+                            <div className="marquee-container marquee-reverse"><div className="marquee-track gap-4">{doubleMixed1.map((img, i) => <div key={i} className="w-[200px] h-[200px] bg-[#111] border border-white/10 shrink-0 overflow-hidden rounded-sm"><img src={img} className="w-full h-full object-cover transition-all duration-500 hover:scale-110" loading="lazy" /></div>)}</div></div>
+                            <div className="marquee-container"><div className="marquee-track gap-4">{doubleMixed2.map((img, i) => <div key={i} className="w-[200px] h-[200px] bg-[#111] border border-white/10 shrink-0 overflow-hidden rounded-sm"><img src={img} className="w-full h-full object-cover transition-all duration-500 hover:scale-110" loading="lazy" /></div>)}</div></div>
                         </div>
                     </div>
                 </section>
@@ -247,9 +305,22 @@
             </footer>
         );
 
-        ReactDOM.createRoot(document.getElementById('root')).render(
-            <div><Navbar /><Hero /><MixedCarousel /><DualModelSection /><LogisticsAndGallery /><Footer /></div>
-        );
+        const App = () => {
+            const [isCartOpen, setIsCartOpen] = useState(false);
+            return (
+                <div>
+                    <Navbar onOpenCart={() => setIsCartOpen(true)} />
+                    <Hero />
+                    <MixedCarousel />
+                    <DualModelSection />
+                    <LogisticsAndGallery />
+                    <Footer />
+                    <CartDrawer isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />
+                </div>
+            );
+        };
+
+        ReactDOM.createRoot(document.getElementById('root')).render(<App />);
     </script>
 </body>
 </html>
