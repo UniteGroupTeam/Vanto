@@ -21,6 +21,7 @@
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         @keyframes auraPulse { 0% { opacity: 0.3; transform: scale(0.8); } 50% { opacity: 0.6; transform: scale(1.1); } 100% { opacity: 0.3; transform: scale(0.8); } }
         .aura-gold { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 120%; height: 120%; background: radial-gradient(circle, rgba(212,175,55,0.25) 0%, rgba(0,0,0,0) 70%); z-index: -1; pointer-events: none; animation: auraPulse 6s infinite ease-in-out; }
+        /* Cart Drawer Smoothness */
         .cart-drawer { transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
         .cart-open { transform: translateX(0); }
         .cart-closed { transform: translateX(100%); }
@@ -41,11 +42,21 @@
             Trash: ({ size = 16 }) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
         };
 
-        // --- CART DRAWER ---
+        // --- CART DRAWER (FIXED HEIGHT) ---
         const CartDrawer = ({ isOpen, onClose }) => {
             const [cart, setCart] = useState([]);
+            const [total, setTotal] = useState(0);
+
             useEffect(() => {
-                const updateCart = () => setCart(JSON.parse(localStorage.getItem('vanto_cart') || '[]'));
+                const updateCart = () => {
+                    const savedCart = JSON.parse(localStorage.getItem('vanto_cart') || '[]');
+                    setCart(savedCart);
+                    const newTotal = savedCart.reduce((acc, item) => {
+                        const price = parseFloat(item.price.replace(/[^0-9.]/g, ''));
+                        return acc + (price * (item.qty || 1));
+                    }, 0);
+                    setTotal(newTotal);
+                };
                 updateCart();
                 window.addEventListener('storage', updateCart);
                 window.addEventListener('cartUpdated', updateCart);
@@ -69,16 +80,12 @@
             };
 
             const checkout = () => {
-                let msg = "Hola Vanto, deseo cotizar el envío para mi pedido exclusivo:%0A%0A";
-                let total = 0;
+                let msg = "Hola Vanto, deseo confirmar mi pedido exclusivo:%0A%0A";
                 cart.forEach(item => {
-                    const priceNum = parseFloat(item.price.replace(/[^0-9.]/g, ''));
-                    const subtotal = priceNum * (item.qty || 1);
-                    total += subtotal;
                     msg += `▪ ${item.name} (${item.variant}) x${item.qty || 1} - ${item.price}%0A`;
                 });
-                msg += `%0A*Total Estimado: $${total.toLocaleString()} MXN*%0A%0A--- DATOS DE ENVÍO ---%0APaís: [Escribir aquí]%0ACódigo Postal: [Escribir aquí]%0A%0AQuedo en espera de la confirmación.`;
-                window.open(`https://wa.me/message/D5Q5X3QYQ3N7N1?text=${msg}`, '_blank');
+                msg += `%0A*TOTAL ESTIMADO: $${total.toLocaleString()} MXN*%0A%0A--------------------------------%0A%0AMi País es: %0AMi Código Postal es: %0A%0AQuedo en espera para finalizar la compra.`;
+                window.open(`https://wa.me/525574123521?text=${msg}`, '_blank');
             };
 
             return (
@@ -98,19 +105,20 @@
                                 </div>
                             ))}
                         </div>
-                        <div className="p-6 border-t border-white/10 bg-[#050505] mb-safe"><button onClick={checkout} disabled={cart.length === 0} className="w-full bg-[#D4AF37] hover:bg-white text-black py-4 text-xs font-bold uppercase tracking-[0.2em] transition-colors disabled:opacity-50">Solicitar Cotización</button><p className="text-[9px] text-gray-600 text-center mt-3 uppercase tracking-widest">Pago y envío coordinado vía WhatsApp</p></div>
+                        <div className="p-6 border-t border-white/10 bg-[#050505] mb-safe">
+                            <div className="flex justify-between items-center mb-4 pb-4 border-b border-white/5"><span className="text-gray-400 text-xs uppercase tracking-widest">Total Estimado</span><span className="text-xl serif text-[#D4AF37]">${total.toLocaleString()} MXN</span></div>
+                            <button onClick={checkout} disabled={cart.length === 0} className="w-full bg-[#D4AF37] hover:bg-white text-black py-4 text-xs font-bold uppercase tracking-[0.2em] transition-colors disabled:opacity-50 disabled:cursor-not-allowed">FINALIZAR COMPRA PRIVADA</button>
+                            <p className="text-[9px] text-gray-600 text-center mt-3 uppercase tracking-widest">Pago y envío coordinado vía WhatsApp</p>
+                        </div>
                     </div>
                 </>
             );
         };
 
-        // --- IMÁGENES DE DETALLE ---
-        const detailsImages = [
-            "https://imgur.com/jqTb79Y.png", "https://imgur.com/rllKylx.png", "https://imgur.com/iDxtSX8.png",
-            "https://imgur.com/xh8ndCi.png", "https://imgur.com/Kl6mloF.png", "https://imgur.com/84Ltctb.png"
-        ];
+        // --- IMÁGENES DETALLE ---
+        const detailsImages = ["https://imgur.com/jqTb79Y.png", "https://imgur.com/rllKylx.png", "https://imgur.com/iDxtSX8.png", "https://imgur.com/xh8ndCi.png", "https://imgur.com/Kl6mloF.png", "https://imgur.com/84Ltctb.png"];
 
-        // --- BASE DE DATOS COMPLETA ---
+        // --- BASE DE DATOS MAESTRA ---
         const diamondProducts = [
             { id: "dk-black-std", type: "diamond", color: "black", name: "Royal Obsidian", price: "$3,799", img: "https://imgur.com/mTZrfNk.png", desc: "Acero Negro Mate" },
             { id: "dk-black-gold", type: "diamond", color: "gold", name: "Royal Gold Noir", price: "$3,799", img: "https://imgur.com/sSVEjXx.png", desc: "Marco Oro 18K Style" },
@@ -142,16 +150,16 @@
             { id: "lth-blu-drk", type: "leather", color: "blue", name: "Abyss Blue", price: "$450", img: "https://i.imgur.com/GnF33co.jpeg", desc: "Azul Oscuro" },
             { id: "lth-titan-org", type: "leather", name: "Titanium Orange", price: "$450", img: "https://i.imgur.com/t6dEVhU.jpeg", desc: "Naranja iPhone 17 Style" },
             { id: "lth-pink-crm", type: "leather", name: "Blush Cream", price: "$299", img: "https://i.imgur.com/USnTQWe.jpeg", desc: "Rosa y Crema" }, 
-            { id: "lth-red-wine", type: "leather", name: "Burgundy Grand", price: "$450", img: "https://i.imgur.com/6XdpRhE.jpeg", desc: "Rojo Vino" },
-            { id: "lth-nvy-hr", type: "leather", name: "Nautical Heritage", price: "$259", img: "https://i.imgur.com/GR0TTLI.jpeg", desc: "Azul Marino / Interior Café" }, 
-            { id: "lth-org-crm", type: "leather", name: "Creamsicle Luxe", price: "$299", img: "https://i.imgur.com/Z6skV8g.jpeg", desc: "Naranja y Crema" }, 
+            { id: "lth-red-wine", type: "leather", color: "red", name: "Burgundy Grand", price: "$450", img: "https://i.imgur.com/6XdpRhE.jpeg", desc: "Rojo Vino" },
+            { id: "lth-nvy-hr", type: "leather", color: "blue", name: "Nautical Heritage", price: "$259", img: "https://i.imgur.com/GR0TTLI.jpeg", desc: "Azul Marino / Interior Café" }, 
+            { id: "lth-org-crm", type: "leather", color: "orange", name: "Creamsicle Luxe", price: "$299", img: "https://i.imgur.com/Z6skV8g.jpeg", desc: "Naranja y Crema" }, 
             { id: "lth-tri-ylw", type: "leather", name: "Tropical Sunrise", price: "$315", img: "https://i.imgur.com/ibE0yCh.jpeg", desc: "Amarillo, Naranja, Rosa" }, 
-            { id: "lth-ylw", type: "leather", name: "Canary Vivid", price: "$450", img: "https://i.imgur.com/A4GyVnC.jpeg", desc: "Amarillo Intenso" },
-            { id: "lth-grn", type: "leather", name: "Verde Bottega", price: "$450", img: "https://i.imgur.com/JbjjzEk.jpeg", desc: "Verde Puro" },
-            { id: "lth-blk-drk", type: "leather", name: "Obsidian Shadow", price: "$450", img: "https://i.imgur.com/sZj8ia6.jpeg", desc: "Negro Profundo" },
-            { id: "lth-panda", type: "leather", name: "Panda Contrast", price: "$299", img: "https://i.imgur.com/6KXCzdj.jpeg", desc: "Negro y Blanco" }, 
-            { id: "lth-cyn", type: "leather", name: "Electric Cyan", price: "$450", img: "https://i.imgur.com/y2V4xRx.jpeg", desc: "Azul Chicle" },
-            { id: "lth-old", type: "leather", name: "Heritage Tan", price: "$450", img: "https://i.imgur.com/666Nokk.jpeg", desc: "Old Money Style" },
+            { id: "lth-ylw", type: "leather", color: "yellow", name: "Canary Vivid", price: "$450", img: "https://i.imgur.com/A4GyVnC.jpeg", desc: "Amarillo Intenso" },
+            { id: "lth-grn", type: "leather", color: "green", name: "Verde Bottega", price: "$450", img: "https://i.imgur.com/JbjjzEk.jpeg", desc: "Verde Puro" },
+            { id: "lth-blk-drk", type: "leather", color: "black", name: "Obsidian Shadow", price: "$450", img: "https://i.imgur.com/sZj8ia6.jpeg", desc: "Negro Profundo" },
+            { id: "lth-panda", type: "leather", color: "white", name: "Panda Contrast", price: "$299", img: "https://i.imgur.com/6KXCzdj.jpeg", desc: "Negro y Blanco" }, 
+            { id: "lth-cyn", type: "leather", color: "blue", name: "Electric Cyan", price: "$450", img: "https://i.imgur.com/y2V4xRx.jpeg", desc: "Azul Chicle" },
+            { id: "lth-old", type: "leather", color: "brown", name: "Heritage Tan", price: "$450", img: "https://i.imgur.com/666Nokk.jpeg", desc: "Old Money Style" },
         ];
         const steelProducts = [
             { id: "stl-stripe-blk", type: "steel", color: "silver", name: "Métal Duo Noir", price: "$399", img: "https://i.imgur.com/GtKHK1l.jpeg", desc: "Plata con línea negra" },
@@ -182,58 +190,21 @@
 
         const allProducts = [...diamondProducts, ...leatherProducts, ...steelProducts, ...caseProducts];
 
-        // --- COMPONENTS ---
-        const Navbar = ({ onOpenCart }) => {
-            const [cartCount, setCartCount] = useState(0);
-            useEffect(() => {
-                const update = () => setCartCount(JSON.parse(localStorage.getItem('vanto_cart') || '[]').length);
-                update();
-                window.addEventListener('cartUpdated', update);
-                window.addEventListener('storage', update);
-                return () => {
-                    window.removeEventListener('cartUpdated', update);
-                    window.removeEventListener('storage', update);
-                };
-            }, []);
-
-            return (
-                <nav className="fixed w-full z-50 py-6 px-8 flex justify-between items-center bg-[#050505]/95 backdrop-blur border-b border-white/5 top-0 left-0 right-0">
-                    <div className="flex items-center gap-8">
-                        <a href="index.html" className="text-gray-400 text-xs tracking-widest hover:text-white uppercase transition-colors">Inicio</a>
-                        <a href="catalogo.html" className="text-gray-400 text-xs tracking-widest hover:text-white uppercase transition-colors">Catálogo</a>
-                    </div>
-                    <a href="index.html"><img src="https://imgur.com/JZmpC36.png" alt="VANTO" className="h-8 md:h-10 invert brightness-200" /></a>
-                    <div className="flex items-center gap-6 md:gap-8">
-                        <button onClick={onOpenCart} className="relative text-white hover:text-[#D4AF37] transition-colors p-2">
-                            <Icons.ShoppingBag size={22} />
-                            {cartCount > 0 && <span className="absolute top-0 right-0 bg-[#D4AF37] text-black text-[9px] font-bold w-4 h-4 rounded-full flex items-center justify-center animate-bounce">{cartCount}</span>}
-                        </button>
-                    </div>
-                </nav>
-            );
-        };
+        const Navbar = ({ onOpenCart }) => (
+            <nav className="fixed w-full z-50 py-6 px-8 flex justify-between items-center bg-[#050505]/95 backdrop-blur border-b border-white/5 top-0 left-0 right-0">
+                <div className="flex items-center gap-8"><a href="index.html" className="text-gray-400 text-xs tracking-widest hover:text-white uppercase transition-colors">Inicio</a><a href="catalogo.html" className="text-gray-400 text-xs tracking-widest hover:text-white uppercase transition-colors">Catálogo</a></div>
+                <a href="index.html"><img src="https://imgur.com/JZmpC36.png" alt="VANTO" className="h-8 md:h-10 invert brightness-200" /></a>
+                <div className="flex items-center gap-6 md:gap-8"><button onClick={onOpenCart} className="relative text-white hover:text-[#D4AF37] transition-colors p-2 cursor-pointer"><Icons.ShoppingBag size={22} /></button></div>
+            </nav>
+        );
 
         const RecommendedCarousel = ({ currentId }) => {
             const recommendations = allProducts.filter(p => p.id !== currentId).sort(() => 0.5 - Math.random()).slice(0, 10);
             return (
-                <div className="mt-32 pb-16">
-                    <h3 className="text-center text-2xl serif text-white mb-10 italic">Te Podría Gustar</h3>
-                    <div className="flex overflow-x-auto gap-6 pb-4 no-scrollbar px-6">
-                        {recommendations.map((item, idx) => (
-                            <a key={idx} href={`producto.html?id=${item.id}&type=${item.type}`} className="min-w-[200px] group">
-                                <div className="aspect-[4/5] bg-[#111] border border-white/5 mb-4 relative overflow-hidden rounded-sm">
-                                    <img src={item.img} className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" />
-                                </div>
-                                <h4 className="text-gray-400 text-xs uppercase tracking-widest truncate group-hover:text-[#D4AF37]">{item.name}</h4>
-                                <span className="text-xs text-white block mt-1">{item.price}</span>
-                            </a>
-                        ))}
-                    </div>
-                </div>
+                <div className="mt-32 pb-16"><h3 className="text-center text-2xl serif text-white mb-10 italic">Te Podría Gustar</h3><div className="flex overflow-x-auto gap-6 pb-4 no-scrollbar px-6">{recommendations.map((item, idx) => (<a key={idx} href={`producto.html?id=${item.id}&type=${item.type}`} className="min-w-[200px] group"><div className="aspect-[4/5] bg-[#111] border border-white/5 mb-4 relative overflow-hidden rounded-sm"><img src={item.img} className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" /></div><h4 className="text-gray-400 text-xs uppercase tracking-widest truncate group-hover:text-[#D4AF37]">{item.name}</h4><span className="text-xs text-white block mt-1">{item.price}</span></a>))}</div></div>
             );
         };
 
-        // --- FUNCION AUXILIAR: AGREGAR AL CARRITO ---
         const addToCart = (product, variant, openCart) => {
             const currentCart = JSON.parse(localStorage.getItem('vanto_cart') || '[]');
             currentCart.push({ ...product, variant: variant, qty: 1 });
@@ -242,37 +213,18 @@
             openCart();
         };
 
-        // --- VISTA DIAMOND (GOLDEN AURA) ---
         const DiamondView = ({ product, openCart }) => {
             const [size, setSize] = useState(null);
             const [mainImage, setMainImage] = useState(product.img);
-            
-            const handleAdd = () => {
-                if (!size) { alert("Por favor selecciona el tamaño."); return; }
-                addToCart(product, size, openCart);
-            };
-            const handleBuyNow = () => {
-                if (!size) { alert("Por favor selecciona el tamaño."); return; }
-                const message = `Hola Vanto, quiero comprar YA el *${product.name}* (L'Édition Royale).%0A- Modelo: ${product.desc}%0A- Tamaño: ${size}%0A- Precio: ${product.price}%0A%0AEnvío datos de pago y dirección.`;
-                window.open(`https://wa.me/message/D5Q5X3QYQ3N7N1?text=${message}`, '_blank');
-            };
-
+            const handleAdd = () => { if (!size) { alert("Por favor selecciona el tamaño."); return; } addToCart(product, size, openCart); };
+            const handleBuyNow = () => { if (!size) { alert("Por favor selecciona el tamaño."); return; } window.open(`https://wa.me/525574123521?text=Hola Vanto, quiero comprar YA el *${product.name}* (L'Édition Royale).%0A- Modelo: ${product.desc}%0A- Tamaño: ${size}%0A- Precio: ${product.price}%0A%0AEnvío datos de pago y dirección.`, '_blank'); };
             return (
                 <div className="flex flex-col gap-16 animate-fade-in relative">
                     <div className="flex flex-col lg:flex-row gap-16">
                         <div className="aura-gold"></div>
                         <div className="w-full lg:w-3/5 z-10">
-                            <div className="aspect-square bg-[#111]/80 backdrop-blur-sm border border-[#D4AF37]/30 relative overflow-hidden group rounded-sm p-10 shadow-[0_0_50px_rgba(212,175,55,0.1)] mb-6">
-                                <img src={mainImage} alt={product.name} className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-700 drop-shadow-2xl" />
-                                <div className="absolute top-4 left-4 bg-gradient-to-r from-[#D4AF37] to-[#F1C40F] text-black text-[9px] font-bold px-3 py-1 uppercase tracking-widest shadow-lg">L'Édition Royale</div>
-                            </div>
-                            {/* Galería de Detalles */}
-                            <div className="grid grid-cols-6 gap-2">
-                                <div onClick={() => setMainImage(product.img)} className="aspect-square bg-[#111] border border-[#D4AF37]/30 cursor-pointer"><img src={product.img} className="w-full h-full object-contain p-2" /></div>
-                                {detailsImages.map((img, i) => (
-                                    <div key={i} onClick={() => setMainImage(img)} className="aspect-square bg-[#111] border border-white/10 hover:border-[#D4AF37] cursor-pointer transition-colors"><img src={img} className="w-full h-full object-cover opacity-70 hover:opacity-100" /></div>
-                                ))}
-                            </div>
+                            <div className="aspect-square bg-[#111]/80 backdrop-blur-sm border border-[#D4AF37]/30 relative overflow-hidden group rounded-sm p-10 shadow-[0_0_50px_rgba(212,175,55,0.1)] mb-6"><img src={mainImage} alt={product.name} className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-700 drop-shadow-2xl" /><div className="absolute top-4 left-4 bg-gradient-to-r from-[#D4AF37] to-[#F1C40F] text-black text-[9px] font-bold px-3 py-1 uppercase tracking-widest shadow-lg">L'Édition Royale</div></div>
+                            <div className="grid grid-cols-6 gap-2"><div onClick={() => setMainImage(product.img)} className="aspect-square bg-[#111] border border-[#D4AF37]/30 cursor-pointer"><img src={product.img} className="w-full h-full object-contain p-2" /></div>{detailsImages.map((img, i) => (<div key={i} onClick={() => setMainImage(img)} className="aspect-square bg-[#111] border border-white/10 hover:border-[#D4AF37] cursor-pointer transition-colors"><img src={img} className="w-full h-full object-cover opacity-70 hover:opacity-100" /></div>))}</div>
                         </div>
                         <div className="w-full lg:w-2/5 flex flex-col justify-center z-10">
                             <span className="text-[#D4AF37] text-xs font-bold tracking-[0.3em] uppercase mb-2">High Jewelry Tech</span>
@@ -280,21 +232,17 @@
                             <p className="text-3xl text-[#D4AF37] font-light mb-6">{product.price} <span className="text-sm text-gray-400 ml-2">MXN</span></p>
                             <p className="text-gray-300 font-light text-sm leading-relaxed mb-8 border-b border-[#D4AF37]/30 pb-8">{product.desc}. Una obra maestra de ingeniería. Acero inoxidable grado quirúrgico con incrustaciones de zirconia.</p>
                             <div className="mb-8"><span className="text-xs uppercase tracking-widest text-[#D4AF37] mb-3 block">Seleccione Calibre</span><div className="flex flex-col gap-3"><button onClick={() => setSize('44mm')} className={`w-full py-4 border text-xs uppercase tracking-widest transition-all ${size === '44mm' ? 'bg-[#D4AF37] text-black border-[#D4AF37] font-bold' : 'border-[#D4AF37]/30 text-gray-300 hover:border-[#D4AF37]'}`}>For Apple Watch 44mm</button><button onClick={() => setSize('45mm')} className={`w-full py-4 border text-xs uppercase tracking-widest transition-all ${size === '45mm' ? 'bg-[#D4AF37] text-black border-[#D4AF37] font-bold' : 'border-[#D4AF37]/30 text-gray-300 hover:border-[#D4AF37]'}`}>For Apple Watch 45mm</button></div></div>
-                            <div className="grid grid-cols-2 gap-4">
-                                <button onClick={handleAdd} className="w-full border border-[#D4AF37] text-[#D4AF37] py-4 font-bold tracking-widest text-xs uppercase hover:bg-[#D4AF37] hover:text-black transition-all">Añadir a la Bolsa</button>
-                                <button onClick={handleBuyNow} className="w-full bg-gradient-to-r from-[#D4AF37] to-[#B7950B] text-black py-4 font-bold tracking-widest text-xs uppercase transition-all shadow-[0_0_20px_rgba(212,175,55,0.4)] hover:shadow-[0_0_30px_rgba(212,175,55,0.6)]">Comprar Ahora</button>
-                            </div>
+                            <div className="grid grid-cols-2 gap-4"><button onClick={handleAdd} className="w-full border border-[#D4AF37] text-[#D4AF37] py-4 font-bold tracking-widest text-xs uppercase hover:bg-[#D4AF37] hover:text-black transition-all">Añadir a la Bolsa</button><button onClick={handleBuyNow} className="w-full bg-gradient-to-r from-[#D4AF37] to-[#B7950B] text-black py-4 font-bold tracking-widest text-xs uppercase transition-all shadow-[0_0_20px_rgba(212,175,55,0.4)] hover:shadow-[0_0_30px_rgba(212,175,55,0.6)]">Comprar Ahora</button></div>
                         </div>
                     </div>
                 </div>
             );
         };
 
-        // --- VISTA ACERO/STEEL ---
         const SteelView = ({ product, openCart }) => {
             const [option, setOption] = useState(null);
             const handleAdd = () => { if (!option) { alert("Selecciona opción."); return; } addToCart(product, option, openCart); };
-            const handleBuy = () => { if (!option) { alert("Selecciona opción."); return; } window.open(`https://wa.me/message/D5Q5X3QYQ3N7N1?text=Compra directa: ${product.name} (${option})`, '_blank'); };
+            const handleBuy = () => { if (!option) { alert("Selecciona opción."); return; } window.open(`https://wa.me/525574123521?text=Compra directa: ${product.name} (${option})`, '_blank'); };
             return (
                 <div className="flex flex-col lg:flex-row gap-16 animate-fade-in">
                     <div className="w-full lg:w-3/5"><div className="aspect-[4/5] bg-[#111] border border-white/5 relative overflow-hidden group rounded-sm"><img src={product.img} alt={product.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-1000" /><div className="absolute top-4 right-4 bg-gray-200 text-black text-[9px] font-bold px-3 py-1 uppercase tracking-widest">Acier</div></div></div>
@@ -310,11 +258,17 @@
             );
         };
 
-        // --- VISTA CASE/FUNDA ---
         const CaseView = ({ product, openCart }) => {
             const [model, setModel] = useState(null);
+            const iphoneModels = [
+                'iPhone 16 Pro Max', 'iPhone 16 Pro', 'iPhone 16 Plus', 'iPhone 16',
+                'iPhone 15 Pro Max', 'iPhone 15 Pro', 'iPhone 15',
+                'iPhone 14 Pro Max', 'iPhone 14 Pro', 'iPhone 14',
+                'iPhone 13 Pro Max', 'iPhone 13 Pro', 'iPhone 13'
+            ];
+            
             const handleAdd = () => { if (!model) { alert("Selecciona modelo."); return; } addToCart(product, model, openCart); };
-            const handleBuy = () => { if (!model) { alert("Selecciona modelo."); return; } window.open(`https://wa.me/message/D5Q5X3QYQ3N7N1?text=Compra directa: ${product.name} (${model})`, '_blank'); };
+            const handleBuy = () => { if (!model) { alert("Selecciona modelo."); return; } window.open(`https://wa.me/525574123521?text=Compra directa: ${product.name} (${model})`, '_blank'); };
             return (
                 <div className="flex flex-col lg:flex-row gap-16 animate-fade-in">
                     <div className="w-full lg:w-3/5"><div className="aspect-[4/5] bg-[#111] border border-white/5 relative overflow-hidden group rounded-sm"><img src={product.img} alt={product.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-1000" /><div className="absolute top-4 right-4 bg-white/20 backdrop-blur text-white text-[9px] font-bold px-3 py-1 uppercase tracking-widest">L'Armure</div></div></div>
@@ -323,18 +277,17 @@
                         <h1 className="text-4xl serif text-white italic mb-2">{product.name}</h1>
                         <p className="text-2xl text-white font-light mb-6">{product.price} <span className="text-sm text-gray-500 ml-2">MXN</span></p>
                         <p className="text-gray-400 font-light text-sm leading-relaxed mb-8 border-b border-white/10 pb-8">{product.desc}. Tacto de seda, protección de carbono. Compatible con MagSafe.</p>
-                        <div className="mb-8"><span className="text-xs uppercase tracking-widest text-gray-500 mb-3 block">Modelo de iPhone</span><div className="grid grid-cols-2 gap-3">{['iPhone 15 Pro Max', 'iPhone 15 Pro', 'iPhone 15', 'iPhone 14 Pro Max', 'iPhone 14 Pro', 'iPhone 14', 'iPhone 13 Pro Max', 'iPhone 13'].map(m => (<button key={m} onClick={() => setModel(m)} className={`py-3 border text-[10px] uppercase transition-all ${model === m ? 'selected-btn' : 'border-white/20 text-gray-400 hover:border-white'}`}>{m}</button>))}</div></div>
+                        <div className="mb-8"><span className="text-xs uppercase tracking-widest text-gray-500 mb-3 block">Modelo de iPhone</span><div className="grid grid-cols-2 gap-3">{iphoneModels.map(m => (<button key={m} onClick={() => setModel(m)} className={`py-3 border text-[10px] uppercase transition-all ${model === m ? 'selected-btn' : 'border-white/20 text-gray-400 hover:border-white'}`}>{m}</button>))}</div></div>
                         <div className="grid grid-cols-2 gap-4"><button onClick={handleAdd} className="w-full border border-white text-white py-4 font-bold tracking-widest text-xs uppercase hover:bg-white hover:text-black transition-all">Añadir a la Bolsa</button><button onClick={handleBuy} className="w-full bg-[#25D366] hover:bg-[#20bd5a] text-white py-4 font-bold tracking-widest text-xs uppercase transition-colors">Comprar Ahora</button></div>
                     </div>
                 </div>
             );
         };
 
-        // --- VISTA LEATHER ---
         const LeatherView = ({ product, openCart }) => {
             const [sizeOption, setSizeOption] = useState(null);
             const handleAdd = () => { if (!sizeOption) { alert("Selecciona opción."); return; } addToCart(product, sizeOption, openCart); };
-            const handleBuy = () => { if (!sizeOption) { alert("Selecciona opción."); return; } window.open(`https://wa.me/message/D5Q5X3QYQ3N7N1?text=Compra directa: ${product.name} (${sizeOption})`, '_blank'); };
+            const handleBuy = () => { if (!sizeOption) { alert("Selecciona opción."); return; } window.open(`https://wa.me/525574123521?text=Compra directa: ${product.name} (${sizeOption})`, '_blank'); };
             return (
                 <div className="flex flex-col lg:flex-row gap-16 animate-fade-in">
                     <div className="w-full lg:w-3/5"><div className="aspect-[4/5] bg-[#111] border border-white/5 relative overflow-hidden group rounded-sm"><img src={product.img} alt={product.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-1000" /></div></div>
@@ -343,7 +296,7 @@
                         <h1 className="text-4xl serif text-white italic mb-2">{product.name}</h1>
                         <p className="text-2xl text-white font-light mb-6">{product.price} <span className="text-sm text-gray-500 ml-2">MXN</span></p>
                         <div className="border-l-2 border-[#D4AF37] pl-4 mb-8"><p className="text-gray-300 font-light text-lg italic">"{product.desc}"</p></div>
-                         <div className="mb-8"><span className="text-xs uppercase tracking-widest text-gray-500 mb-3 block">Selecciona tu Medida</span><div className="flex flex-col gap-3"><button onClick={() => setSizeOption('Opción 1 (40/41/42mm S10)')} className={`w-full py-4 border text-[10px] md:text-xs uppercase transition-all ${sizeOption?.includes('Opción 1') ? 'selected-btn' : 'border-white/20 text-gray-400 hover:border-white'}`}>Opción 1: 40mm / 41mm / S10 42mm</button><button onClick={() => setSizeOption('Opción 2 (42-49mm)')} className={`w-full py-4 border text-[10px] md:text-xs uppercase transition-all ${sizeOption?.includes('Opción 2') ? 'selected-btn' : 'border-white/20 text-gray-400 hover:border-white'}`}>Opción 2: 42mm / 44mm / 45mm / 46mm / 49mm</button></div></div>
+                         <div className="mb-8"><span className="text-xs uppercase tracking-widest text-gray-500 mb-3 block">Selecciona tu Medida</span><div className="flex flex-col gap-3"><button onClick={() => setSizeOption('Opción 1 (40/41/42mm S10)')} className={`w-full py-4 border text-[10px] md:text-xs uppercase transition-all ${sizeOption?.includes('Opción 1') ? 'selected-btn' : 'border-white/20 text-gray-400 hover:border-white'}`}>Opción 1: 40mm / 41mm / S10 42mm</button><button onClick={() => setSizeOption('Opción 2 (42-49mm)')} className={`w-full py-4 border text-[10px] md:text-xs uppercase transition-all ${sizeOption?.includes('Opción 2') ? 'selected-btn' : 'border-white/20 text-gray-400 hover:border-white'}`}>Opción 2: 42mm / 44mm / 45mm / 49mm</button></div></div>
                         <div className="grid grid-cols-2 gap-4"><button onClick={handleAdd} className="w-full border border-white text-white py-4 font-bold tracking-widest text-xs uppercase hover:bg-white hover:text-black transition-all">Añadir a la Bolsa</button><button onClick={handleBuy} className="w-full bg-[#25D366] hover:bg-[#20bd5a] text-white py-4 font-bold tracking-widest text-xs uppercase transition-colors">Comprar Ahora</button></div>
                     </div>
                 </div>
@@ -377,17 +330,11 @@
                         <RecommendedCarousel currentId={selectedProduct.id} />
                     </div>
 
-                    <Footer />
+                    <footer className="bg-[#020202] border-t border-white/5 py-12 text-center text-gray-600 text-[10px] uppercase tracking-widest">&copy; 2025 Vanto. Designed for Luxury.</footer>
                     <CartDrawer isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />
                 </div>
             );
         };
-
-        const Footer = () => (
-             <footer className="bg-[#020202] border-t border-white/5 py-12 text-center text-gray-600 text-[10px] uppercase tracking-widest">
-                &copy; 2025 Vanto. L'Art de Vivre.
-            </footer>
-        );
 
         ReactDOM.createRoot(document.getElementById('root')).render(<ProductPage />);
     </script>

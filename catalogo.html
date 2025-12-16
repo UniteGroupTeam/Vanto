@@ -5,14 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Le Catalogue | Vanto</title>
     <link rel="icon" type="image/png" href="https://imgur.com/kbF7hve.png">
-    
     <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
-    
     <link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&family=Playfair+Display:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
-    
     <style>
         body { background-color: #050505; color: #E5E5E5; font-family: 'Lato', sans-serif; }
         .serif { font-family: 'Playfair Display', serif; }
@@ -28,11 +25,8 @@
 </head>
 <body>
     <div id="root"></div>
-
     <script type="text/babel">
         const { useState, useEffect } = React;
-
-        // --- ICONS ---
         const Icons = {
             ShoppingBag: ({ size = 24 }) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 0 1-8 0"></path></svg>,
             X: ({ size = 24 }) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>,
@@ -40,71 +34,54 @@
             Plus: ({ size = 16 }) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>,
             Trash: ({ size = 16 }) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
         };
-
-        // --- CART DRAWER ---
         const CartDrawer = ({ isOpen, onClose }) => {
             const [cart, setCart] = useState([]);
+            const [total, setTotal] = useState(0);
             useEffect(() => {
-                const updateCart = () => setCart(JSON.parse(localStorage.getItem('vanto_cart') || '[]'));
+                const updateCart = () => {
+                    const savedCart = JSON.parse(localStorage.getItem('vanto_cart') || '[]');
+                    setCart(savedCart);
+                    const newTotal = savedCart.reduce((acc, item) => {
+                        const price = parseFloat(item.price.replace(/[^0-9.]/g, ''));
+                        return acc + (price * (item.qty || 1));
+                    }, 0);
+                    setTotal(newTotal);
+                };
                 updateCart();
                 window.addEventListener('storage', updateCart);
                 window.addEventListener('cartUpdated', updateCart);
-                return () => {
-                    window.removeEventListener('storage', updateCart);
-                    window.removeEventListener('cartUpdated', updateCart);
-                };
+                return () => { window.removeEventListener('storage', updateCart); window.removeEventListener('cartUpdated', updateCart); };
             }, []);
-
             const updateQty = (index, delta) => {
                 const newCart = [...cart];
                 newCart[index].qty = Math.max(1, (newCart[index].qty || 1) + delta);
                 localStorage.setItem('vanto_cart', JSON.stringify(newCart));
                 window.dispatchEvent(new Event('cartUpdated'));
             };
-
             const removeItem = (index) => {
                 const newCart = cart.filter((_, i) => i !== index);
                 localStorage.setItem('vanto_cart', JSON.stringify(newCart));
                 window.dispatchEvent(new Event('cartUpdated'));
             };
-
             const checkout = () => {
-                let msg = "Hola Vanto, deseo cotizar el envío para mi pedido exclusivo:%0A%0A";
-                let total = 0;
+                let msg = "Hola Vanto, deseo confirmar mi pedido exclusivo:%0A%0A";
                 cart.forEach(item => {
-                    const priceNum = parseFloat(item.price.replace(/[^0-9.]/g, ''));
-                    const subtotal = priceNum * (item.qty || 1);
-                    total += subtotal;
                     msg += `▪ ${item.name} (${item.variant}) x${item.qty || 1} - ${item.price}%0A`;
                 });
-                msg += `%0A*Total Estimado: $${total.toLocaleString()} MXN*%0A%0A--- DATOS DE ENVÍO ---%0APaís: [Escribir aquí]%0ACódigo Postal: [Escribir aquí]%0A%0AQuedo en espera de la confirmación.`;
-                window.open(`https://wa.me/message/D5Q5X3QYQ3N7N1?text=${msg}`, '_blank');
+                msg += `%0A*TOTAL ESTIMADO: $${total.toLocaleString()} MXN*%0A%0A--------------------------------%0A%0AMi País es: %0AMi Código Postal es: %0A%0AQuedo en espera para finalizar la compra.`;
+                window.open(`https://wa.me/525574123521?text=${msg}`, '_blank');
             };
-
             return (
                 <>
                     <div className={`fixed inset-0 bg-black/60 backdrop-blur-sm z-[60] transition-opacity duration-300 ${isOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`} onClick={onClose}></div>
                     <div className={`fixed top-0 right-0 h-[100dvh] w-full md:w-[450px] bg-[#0A0A0A] border-l border-white/10 z-[70] cart-drawer ${isOpen ? 'cart-open' : 'cart-closed'} flex flex-col`}>
                         <div className="p-6 border-b border-white/10 flex justify-between items-center"><h2 className="text-xl serif text-white italic">Tu Selección</h2><button onClick={onClose} className="text-gray-400 hover:text-white"><Icons.X /></button></div>
-                        <div className="flex-1 overflow-y-auto p-6 space-y-6">
-                            {cart.length === 0 ? <div className="text-center text-gray-500 mt-20">Tu bolsa está vacía.</div> : cart.map((item, idx) => (
-                                <div key={idx} className="flex gap-4 bg-[#111] p-4 rounded-sm border border-white/5">
-                                    <img src={item.img} className="w-20 h-24 object-cover rounded-sm" />
-                                    <div className="flex-1">
-                                        <div className="flex justify-between items-start mb-1"><h3 className="text-sm text-white font-medium">{item.name}</h3><button onClick={() => removeItem(idx)} className="text-gray-600 hover:text-red-500"><Icons.Trash /></button></div>
-                                        <p className="text-[10px] text-gray-400 uppercase tracking-wider mb-3">{item.variant}</p>
-                                        <div className="flex justify-between items-center"><p className="text-sm text-[#D4AF37]">{item.price}</p><div className="flex items-center gap-3 border border-white/10 px-2 py-1 rounded-sm"><button onClick={() => updateQty(idx, -1)} className="text-gray-400 hover:text-white"><Icons.Minus /></button><span className="text-xs text-white w-4 text-center">{item.qty || 1}</span><button onClick={() => updateQty(idx, 1)} className="text-gray-400 hover:text-white"><Icons.Plus /></button></div></div>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                        <div className="p-6 border-t border-white/10 bg-[#050505] mb-safe"><button onClick={checkout} disabled={cart.length === 0} className="w-full bg-[#D4AF37] hover:bg-white text-black py-4 text-xs font-bold uppercase tracking-[0.2em] transition-colors disabled:opacity-50">Solicitar Cotización</button><p className="text-[9px] text-gray-600 text-center mt-3 uppercase tracking-widest">Pago y envío coordinado vía WhatsApp</p></div>
+                        <div className="flex-1 overflow-y-auto p-6 space-y-6">{cart.length === 0 ? <div className="text-center text-gray-500 mt-20">Tu bolsa está vacía.</div> : cart.map((item, idx) => (<div key={idx} className="flex gap-4 bg-[#111] p-4 rounded-sm border border-white/5"><img src={item.img} className="w-20 h-24 object-cover rounded-sm" /><div className="flex-1"><div className="flex justify-between items-start mb-1"><h3 className="text-sm text-white font-medium">{item.name}</h3><button onClick={() => removeItem(idx)} className="text-gray-600 hover:text-red-500"><Icons.Trash /></button></div><p className="text-[10px] text-gray-400 uppercase tracking-wider mb-3">{item.variant}</p><div className="flex justify-between items-center"><p className="text-sm text-[#D4AF37]">{item.price}</p><div className="flex items-center gap-3 border border-white/10 px-2 py-1 rounded-sm"><button onClick={() => updateQty(idx, -1)} className="text-gray-400 hover:text-white"><Icons.Minus /></button><span className="text-xs text-white w-4 text-center">{item.qty || 1}</span><button onClick={() => updateQty(idx, 1)} className="text-gray-400 hover:text-white"><Icons.Plus /></button></div></div></div></div>))}</div>
+                        <div className="p-6 border-t border-white/10 bg-[#050505] mb-safe"><div className="flex justify-between items-center mb-4 pb-4 border-b border-white/5"><span className="text-gray-400 text-xs uppercase tracking-widest">Total Estimado</span><span className="text-xl serif text-[#D4AF37]">${total.toLocaleString()} MXN</span></div><button onClick={checkout} disabled={cart.length === 0} className="w-full bg-[#D4AF37] hover:bg-white text-black py-4 text-xs font-bold uppercase tracking-[0.2em] transition-colors disabled:opacity-50 disabled:cursor-not-allowed">FINALIZAR COMPRA PRIVADA</button><p className="text-[9px] text-gray-600 text-center mt-3 uppercase tracking-widest">Pago y envío coordinado vía WhatsApp</p></div>
                     </div>
                 </>
             );
         };
-
-        // --- BASE DE DATOS MAESTRA ---
         const diamondProducts = [
             { id: "dk-black-std", type: "diamond", color: "black", name: "Royal Obsidian", price: "$3,799", img: "https://imgur.com/mTZrfNk.png", desc: "Acero Negro Mate" },
             { id: "dk-black-gold", type: "diamond", color: "gold", name: "Royal Gold Noir", price: "$3,799", img: "https://imgur.com/sSVEjXx.png", desc: "Marco Oro 18K Style" },
@@ -134,18 +111,18 @@
             { id: "lth-blu-wine", type: "leather", color: "blue", name: "Royal Bordeaux", price: "$299", img: "https://i.imgur.com/mIrorgs.jpeg", desc: "Azul y Vino" }, 
             { id: "lth-tri-org", type: "leather", color: "orange", name: "Mediterranean Voyage", price: "$299", img: "https://i.imgur.com/tHUvBYW.jpeg", desc: "Azul, Crema, Naranja" }, 
             { id: "lth-blu-drk", type: "leather", color: "blue", name: "Abyss Blue", price: "$450", img: "https://i.imgur.com/GnF33co.jpeg", desc: "Azul Oscuro" },
-            { id: "lth-titan-org", type: "leather", name: "Titanium Orange", price: "$450", img: "https://i.imgur.com/t6dEVhU.jpeg", desc: "Naranja iPhone 17 Style" },
-            { id: "lth-pink-crm", type: "leather", name: "Blush Cream", price: "$299", img: "https://i.imgur.com/USnTQWe.jpeg", desc: "Rosa y Crema" }, 
-            { id: "lth-red-wine", type: "leather", name: "Burgundy Grand", price: "$450", img: "https://i.imgur.com/6XdpRhE.jpeg", desc: "Rojo Vino" },
-            { id: "lth-nvy-hr", type: "leather", name: "Nautical Heritage", price: "$259", img: "https://i.imgur.com/GR0TTLI.jpeg", desc: "Azul Marino / Interior Café" }, 
-            { id: "lth-org-crm", type: "leather", name: "Creamsicle Luxe", price: "$299", img: "https://i.imgur.com/Z6skV8g.jpeg", desc: "Naranja y Crema" }, 
-            { id: "lth-tri-ylw", type: "leather", name: "Tropical Sunrise", price: "$315", img: "https://i.imgur.com/ibE0yCh.jpeg", desc: "Amarillo, Naranja, Rosa" }, 
-            { id: "lth-ylw", type: "leather", name: "Canary Vivid", price: "$450", img: "https://i.imgur.com/A4GyVnC.jpeg", desc: "Amarillo Intenso" },
-            { id: "lth-grn", type: "leather", name: "Verde Bottega", price: "$450", img: "https://i.imgur.com/JbjjzEk.jpeg", desc: "Verde Puro" },
-            { id: "lth-blk-drk", type: "leather", name: "Obsidian Shadow", price: "$450", img: "https://i.imgur.com/sZj8ia6.jpeg", desc: "Negro Profundo" },
-            { id: "lth-panda", type: "leather", name: "Panda Contrast", price: "$299", img: "https://i.imgur.com/6KXCzdj.jpeg", desc: "Negro y Blanco" }, 
-            { id: "lth-cyn", type: "leather", name: "Electric Cyan", price: "$450", img: "https://i.imgur.com/y2V4xRx.jpeg", desc: "Azul Chicle" },
-            { id: "lth-old", type: "leather", name: "Heritage Tan", price: "$450", img: "https://i.imgur.com/666Nokk.jpeg", desc: "Old Money Style" },
+            { id: "lth-titan-org", type: "leather", color: "orange", name: "Titanium Orange", price: "$450", img: "https://i.imgur.com/t6dEVhU.jpeg", desc: "Naranja iPhone 17 Style" },
+            { id: "lth-pink-crm", type: "leather", color: "pink", name: "Blush Cream", price: "$299", img: "https://i.imgur.com/USnTQWe.jpeg", desc: "Rosa y Crema" }, 
+            { id: "lth-red-wine", type: "leather", color: "red", name: "Burgundy Grand", price: "$450", img: "https://i.imgur.com/6XdpRhE.jpeg", desc: "Rojo Vino" },
+            { id: "lth-nvy-hr", type: "leather", color: "blue", name: "Nautical Heritage", price: "$259", img: "https://i.imgur.com/GR0TTLI.jpeg", desc: "Azul Marino / Interior Café" }, 
+            { id: "lth-org-crm", type: "leather", color: "orange", name: "Creamsicle Luxe", price: "$299", img: "https://i.imgur.com/Z6skV8g.jpeg", desc: "Naranja y Crema" }, 
+            { id: "lth-tri-ylw", type: "leather", color: "yellow", name: "Tropical Sunrise", price: "$315", img: "https://i.imgur.com/ibE0yCh.jpeg", desc: "Amarillo, Naranja, Rosa" }, 
+            { id: "lth-ylw", type: "leather", color: "yellow", name: "Canary Vivid", price: "$450", img: "https://i.imgur.com/A4GyVnC.jpeg", desc: "Amarillo Intenso" },
+            { id: "lth-grn", type: "leather", color: "green", name: "Verde Bottega", price: "$450", img: "https://i.imgur.com/JbjjzEk.jpeg", desc: "Verde Puro" },
+            { id: "lth-blk-drk", type: "leather", color: "black", name: "Obsidian Shadow", price: "$450", img: "https://i.imgur.com/sZj8ia6.jpeg", desc: "Negro Profundo" },
+            { id: "lth-panda", type: "leather", color: "white", name: "Panda Contrast", price: "$299", img: "https://i.imgur.com/6KXCzdj.jpeg", desc: "Negro y Blanco" }, 
+            { id: "lth-cyn", type: "leather", color: "blue", name: "Electric Cyan", price: "$450", img: "https://i.imgur.com/y2V4xRx.jpeg", desc: "Azul Chicle" },
+            { id: "lth-old", type: "leather", color: "brown", name: "Heritage Tan", price: "$450", img: "https://i.imgur.com/666Nokk.jpeg", desc: "Old Money Style" },
         ];
         const steelProducts = [
             { id: "stl-stripe-blk", type: "steel", color: "silver", name: "Métal Duo Noir", price: "$399", img: "https://i.imgur.com/GtKHK1l.jpeg", desc: "Plata con línea negra" },
@@ -173,9 +150,7 @@
             { id: "case-heritage", type: "case", color: "black", name: "Heritage Stripe", price: "$299", img: "https://i.imgur.com/WRlMIPQ.jpeg", desc: "Franja Tricolor" },
             { id: "case-urban", type: "case", color: "black", name: "Urban Camo", price: "$329", img: "https://i.imgur.com/q8wF3Qa.jpeg", desc: "Franja Monocromática" },
         ];
-
         const allProducts = [...diamondProducts, ...leatherProducts, ...steelProducts, ...caseProducts];
-
         const Navbar = ({ onOpenCart }) => {
             const [cartCount, setCartCount] = useState(0);
             useEffect(() => {
@@ -183,29 +158,16 @@
                 update();
                 window.addEventListener('cartUpdated', update);
                 window.addEventListener('storage', update);
-                return () => {
-                    window.removeEventListener('cartUpdated', update);
-                    window.removeEventListener('storage', update);
-                };
+                return () => { window.removeEventListener('cartUpdated', update); window.removeEventListener('storage', update); };
             }, []);
-
             return (
                 <nav className="fixed w-full z-50 py-6 px-8 flex justify-between items-center bg-[#050505]/95 backdrop-blur border-b border-white/5 top-0 left-0 right-0">
-                    <div className="flex items-center gap-8">
-                        <a href="index.html" className="text-gray-400 text-xs tracking-widest hover:text-white uppercase transition-colors">Inicio</a>
-                        <a href="catalogo.html" className="text-gray-400 text-xs tracking-widest hover:text-white uppercase transition-colors">Catálogo</a>
-                    </div>
+                    <div className="flex items-center gap-8"><a href="index.html" className="text-gray-400 text-xs tracking-widest hover:text-white uppercase transition-colors">Inicio</a><a href="catalogo.html" className="text-gray-400 text-xs tracking-widest hover:text-white uppercase transition-colors">Catálogo</a></div>
                     <a href="index.html"><img src="https://imgur.com/JZmpC36.png" alt="VANTO" className="h-8 md:h-10 invert brightness-200" /></a>
-                    <div className="flex items-center gap-6 md:gap-8">
-                        <button onClick={onOpenCart} className="relative text-white hover:text-[#D4AF37] transition-colors p-2">
-                            <Icons.ShoppingBag size={22} />
-                            {cartCount > 0 && <span className="absolute top-0 right-0 bg-[#D4AF37] text-black text-[9px] font-bold w-4 h-4 rounded-full flex items-center justify-center animate-bounce">{cartCount}</span>}
-                        </button>
-                    </div>
+                    <div className="flex items-center gap-6 md:gap-8"><button onClick={onOpenCart} className="relative text-white hover:text-[#D4AF37] transition-colors p-2 cursor-pointer"><Icons.ShoppingBag size={22} />{cartCount > 0 && <span className="absolute top-0 right-0 bg-[#D4AF37] text-black text-[9px] font-bold w-4 h-4 rounded-full flex items-center justify-center animate-bounce">{cartCount}</span>}</button></div>
                 </nav>
             );
         };
-
         const ProductCard = ({ item }) => {
             const url = `producto.html?id=${item.id}&type=${item.type}`;
             const isRoyal = item.type === 'diamond';
@@ -220,70 +182,41 @@
                     </div>
                     <div className="text-center relative">
                         {isRoyal && <div className="absolute -inset-4 bg-[#D4AF37] opacity-0 group-hover:opacity-5 blur-xl transition-opacity"></div>}
-                        <h3 className={`text-lg serif italic mb-1 transition-colors ${isRoyal ? 'text-[#D4AF37]' : 'text-white group-hover:text-gray-300'}`}>{item.name}</h3>
-                        {item.desc && <p className="text-gray-500 text-[10px] uppercase tracking-widest mb-2">{item.desc}</p>}
+                        <h3 className={`text-sm md:text-lg serif italic mb-1 transition-colors ${isRoyal ? 'text-[#D4AF37]' : 'text-white group-hover:text-gray-300'}`}>{item.name}</h3>
+                        {item.desc && <p className="text-gray-500 text-[9px] md:text-[10px] uppercase tracking-widest mb-2">{item.desc}</p>}
                         <p className="text-white font-medium">{item.price}</p>
                     </div>
                 </a>
             );
         };
-
         const Catalog = () => {
             const [filterType, setFilterType] = useState('all');
             const [searchQuery, setSearchQuery] = useState('');
             const [activeColor, setActiveColor] = useState('all');
-
             const filteredProducts = allProducts.filter(product => {
                 const matchesType = filterType === 'all' || product.type === filterType;
                 const matchesSearch = product.name.toLowerCase().includes(searchQuery.toLowerCase()) || product.desc.toLowerCase().includes(searchQuery.toLowerCase());
                 const matchesColor = activeColor === 'all' || product.color === activeColor;
                 return matchesType && matchesSearch && matchesColor;
             });
-
             return (
                 <div className="pt-32 pb-24 container mx-auto px-6 min-h-screen relative">
                     <div className="sticky top-24 z-40 mb-16 liquid-glass rounded-xl p-6 transition-all duration-500">
                         <div className="flex flex-col md:flex-row justify-between items-center gap-6">
-                            <div className="w-full md:w-1/3 relative">
-                                <input type="text" placeholder="Buscar en el archivo..." className="w-full bg-transparent border-b border-white/20 text-white text-sm py-2 focus:outline-none focus:border-[#D4AF37] transition-colors placeholder-gray-500" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} />
-                                <svg className="absolute right-0 top-2 text-gray-500" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-                            </div>
-                            <div className="flex gap-4 text-xs uppercase tracking-widest overflow-x-auto no-scrollbar">
-                                <button onClick={() => setFilterType('all')} className={`pb-1 border-b-2 transition-colors ${filterType === 'all' ? 'border-[#D4AF37] text-white' : 'border-transparent text-gray-500 hover:text-gray-300'}`}>Todo</button>
-                                <button onClick={() => setFilterType('diamond')} className={`pb-1 border-b-2 transition-colors ${filterType === 'diamond' ? 'border-[#D4AF37] text-[#D4AF37]' : 'border-transparent text-gray-500 hover:text-gray-300'}`}>L'Édition Royale</button>
-                                <button onClick={() => setFilterType('case')} className={`pb-1 border-b-2 transition-colors ${filterType === 'case' ? 'border-[#D4AF37] text-white' : 'border-transparent text-gray-500 hover:text-gray-300'}`}>L'Armure Carbone</button>
-                                <button onClick={() => setFilterType('steel')} className={`pb-1 border-b-2 transition-colors ${filterType === 'steel' ? 'border-[#D4AF37] text-white' : 'border-transparent text-gray-500 hover:text-gray-300'}`}>L'Acier</button>
-                                <button onClick={() => setFilterType('leather')} className={`pb-1 border-b-2 transition-colors ${filterType === 'leather' ? 'border-[#D4AF37] text-white' : 'border-transparent text-gray-500 hover:text-gray-300'}`}>Atelier</button>
-                            </div>
-                            <div className="flex gap-2">
-                                {['all', 'black', 'gold', 'silver', 'blue', 'red', 'green', 'pink'].map(c => (
-                                    <button key={c} onClick={() => setActiveColor(c)} className={`w-4 h-4 rounded-full border border-white/20 transition-transform hover:scale-125 ${activeColor === c ? 'scale-125 border-white' : ''}`} style={{background: c === 'all' ? 'transparent' : c, backgroundImage: c === 'all' ? 'conic-gradient(red, orange, yellow, green, blue, indigo, violet)' : 'none'}} title={c} />
-                                ))}
-                            </div>
+                            <div className="w-full md:w-1/3 relative"><input type="text" placeholder="Buscar en el archivo..." className="w-full bg-transparent border-b border-white/20 text-white text-sm py-2 focus:outline-none focus:border-[#D4AF37] transition-colors placeholder-gray-500" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} /><svg className="absolute right-0 top-2 text-gray-500" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg></div>
+                            <div className="flex gap-4 text-xs uppercase tracking-widest overflow-x-auto no-scrollbar"><button onClick={() => setFilterType('all')} className={`pb-1 border-b-2 transition-colors ${filterType === 'all' ? 'border-[#D4AF37] text-white' : 'border-transparent text-gray-500 hover:text-gray-300'}`}>Todo</button><button onClick={() => setFilterType('diamond')} className={`pb-1 border-b-2 transition-colors ${filterType === 'diamond' ? 'border-[#D4AF37] text-[#D4AF37]' : 'border-transparent text-gray-500 hover:text-gray-300'}`}>L'Édition Royale</button><button onClick={() => setFilterType('case')} className={`pb-1 border-b-2 transition-colors ${filterType === 'case' ? 'border-[#D4AF37] text-white' : 'border-transparent text-gray-500 hover:text-gray-300'}`}>L'Armure Carbone</button><button onClick={() => setFilterType('steel')} className={`pb-1 border-b-2 transition-colors ${filterType === 'steel' ? 'border-[#D4AF37] text-white' : 'border-transparent text-gray-500 hover:text-gray-300'}`}>L'Acier</button><button onClick={() => setFilterType('leather')} className={`pb-1 border-b-2 transition-colors ${filterType === 'leather' ? 'border-[#D4AF37] text-white' : 'border-transparent text-gray-500 hover:text-gray-300'}`}>Atelier</button></div>
+                            <div className="flex gap-2">{['all', 'black', 'gold', 'silver', 'blue', 'red', 'green', 'pink'].map(c => (<button key={c} onClick={() => setActiveColor(c)} className={`w-4 h-4 rounded-full border border-white/20 transition-transform hover:scale-125 ${activeColor === c ? 'scale-125 border-white' : ''}`} style={{background: c === 'all' ? 'transparent' : c, backgroundImage: c === 'all' ? 'conic-gradient(red, orange, yellow, green, blue, indigo, violet)' : 'none'}} title={c} />))}</div>
                         </div>
                     </div>
-                    <div className="text-center mb-12">
-                        <h1 className="text-4xl md:text-5xl text-white serif italic">{filterType === 'diamond' ? "L'Édition Royale" : filterType === 'case' ? "L'Armure Carbone" : filterType === 'steel' ? "L'Acier Moderne" : filterType === 'leather' ? "Leather Atelier" : "Le Grand Catalogue"}</h1>
-                        <p className="text-gray-500 text-xs tracking-[0.3em] uppercase mt-4">{filteredProducts.length} Piezas Encontradas</p>
-                    </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-8 gap-y-12">
-                        {filteredProducts.map((p) => <ProductCard key={p.id} item={p} />)}
-                    </div>
+                    <div className="text-center mb-12"><h1 className="text-4xl md:text-5xl text-white serif italic">{filterType === 'diamond' ? "L'Édition Royale" : filterType === 'case' ? "L'Armure Carbone" : filterType === 'steel' ? "L'Acier Moderne" : filterType === 'leather' ? "Leather Atelier" : "Le Grand Catalogue"}</h1><p className="text-gray-500 text-xs tracking-[0.3em] uppercase mt-4">{filteredProducts.length} Piezas Encontradas</p></div>
+                    <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-6 gap-y-12">{filteredProducts.map((p) => <ProductCard key={p.id} item={p} />)}</div>
                 </div>
             );
         };
-
         const App = () => {
             const [isCartOpen, setIsCartOpen] = useState(false);
-            return (
-                <div>
-                    <Navbar onOpenCart={() => setIsCartOpen(true)} />
-                    <Catalog />
-                    <CartDrawer isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />
-                </div>
-            );
+            return (<div><Navbar onOpenCart={() => setIsCartOpen(true)} /><Catalog /><CartDrawer isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} /></div>);
         };
-
         ReactDOM.createRoot(document.getElementById('root')).render(<App />);
     </script>
 </body>
