@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Diamond Mod Kit | Vanto</title>
+    <title>Detalle | Vanto</title>
     <link rel="icon" type="image/png" href="https://imgur.com/kbF7hve.png">
     
     <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
@@ -14,11 +14,11 @@
     <link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&family=Playfair+Display:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
     
     <style>
-        body { background-color: #050505; color: #E5E5E5; font-family: 'Lato', sans-serif; }
+        body { background-color: #050505; color: #E5E5E5; font-family: 'Lato', sans-serif; overflow-x: hidden; }
         .serif { font-family: 'Playfair Display', serif; }
-        .no-scrollbar::-webkit-scrollbar { display: none; }
-        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-        .selected-ring { box-shadow: 0 0 0 2px #050505, 0 0 0 4px #D4AF37; }
+        .selected-btn { background-color: white; color: black; border-color: white; }
+        @keyframes auraPulse { 0% { opacity: 0.3; transform: scale(0.8); } 50% { opacity: 0.6; transform: scale(1.1); } 100% { opacity: 0.3; transform: scale(0.8); } }
+        .aura-gold { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 120%; height: 120%; background: radial-gradient(circle, rgba(212,175,55,0.25) 0%, rgba(0,0,0,0) 70%); z-index: -1; pointer-events: none; animation: auraPulse 6s infinite ease-in-out; }
     </style>
 </head>
 <body>
@@ -27,158 +27,239 @@
     <script type="text/babel">
         const { useState, useEffect } = React;
 
-        // DATA
-        const essentialsImages = [
-            "https://i.imgur.com/SSK1Afy.jpeg", "https://i.imgur.com/a1j8inY.jpeg", "https://i.imgur.com/k9vp5hV.jpeg",
-            "https://i.imgur.com/TP7sIem.jpeg", "https://i.imgur.com/GMJMfm1.jpeg", "https://i.imgur.com/0XJC1I9.jpeg",
-            "https://i.imgur.com/6JH0Wof.jpeg", "https://i.imgur.com/fSdEgeF.jpeg", "https://i.imgur.com/ZskP6Ox.jpeg",
-            "https://i.imgur.com/LZPIuFp.jpeg", "https://i.imgur.com/RRhzX8F.jpeg", "https://i.imgur.com/rTokCGt.jpeg"
+        // --- BASE DE DATOS MAESTRA (Debe ser idéntica a Catalogo) ---
+        const diamondProducts = [
+            { id: "dk-black-std", type: "diamond", color: "black", name: "Royal Obsidian", price: "$3,799", img: "https://imgur.com/mTZrfNk.png", desc: "Acero Negro Mate" },
+            { id: "dk-black-gold", type: "diamond", color: "gold", name: "Royal Gold Noir", price: "$3,799", img: "https://imgur.com/sSVEjXx.png", desc: "Marco Oro 18K Style" },
+            { id: "dk-black-slv", type: "diamond", name: "Royal Silver Noir", price: "$3,799", img: "https://imgur.com/BVxeZjT.png", desc: "Plata Espejo" },
+            { id: "dk-red-std", type: "diamond", name: "Imperial Crimson", price: "$3,799", img: "https://imgur.com/F9maphh.png", desc: "Rojo Intenso" },
+            { id: "dk-red-gold", type: "diamond", name: "Imperial Gold Red", price: "$3,799", img: "https://imgur.com/iEo5vH6.png", desc: "Lujo Asiático" },
+            { id: "dk-red-slv", type: "diamond", name: "Imperial Silver Red", price: "$3,799", img: "https://imgur.com/KZAkaCL.png", desc: "Alto Contraste" },
+            { id: "dk-white-std", type: "diamond", name: "Arctic Pure", price: "$3,799", img: "https://imgur.com/aJBqGPw.png", desc: "Blanco Minimalista" },
+            { id: "dk-white-gold", type: "diamond", name: "Arctic Gold", price: "$3,799", img: "https://imgur.com/RhQXnrz.png", desc: "Elegancia Pura" },
+            { id: "dk-white-slv", type: "diamond", name: "Arctic Silver", price: "$3,799", img: "https://imgur.com/XXZWf5V.png", desc: "Clean Look" },
+            { id: "dk-org-std", type: "diamond", name: "Sunset Sport", price: "$3,799", img: "https://imgur.com/Ecasdst.png", desc: "Naranja Vibrante" },
+            { id: "dk-org-gold", type: "diamond", name: "Sunset Gold", price: "$3,799", img: "https://imgur.com/49SZTDb.png", desc: "Exclusivo" },
+            { id: "dk-org-slv", type: "diamond", name: "Sunset Silver", price: "$3,799", img: "https://imgur.com/pDk7Gkq.png", desc: "Moderno" },
+            { id: "dk-grn-std", type: "diamond", name: "Neon Venom", price: "$3,799", img: "https://imgur.com/4XHXHEr.png", desc: "Verde Ácido" },
+            { id: "dk-grn-slv", type: "diamond", name: "Neon Silver", price: "$3,799", img: "https://imgur.com/6uOtpc8.png", desc: "Futurista" },
         ];
-
-        const variants = {
-            black: { standard: "https://imgur.com/mTZrfNk.png", gold: "https://imgur.com/sSVEjXx.png", silver: "https://imgur.com/BVxeZjT.png" },
-            green: { standard: "https://imgur.com/4XHXHEr.png", gold: "https://imgur.com/4XHXHEr.png", silver: "https://imgur.com/6uOtpc8.png" },
-            orange: { standard: "https://imgur.com/Ecasdst.png", gold: "https://imgur.com/49SZTDb.png", silver: "https://imgur.com/pDk7Gkq.png" },
-            red: { standard: "https://imgur.com/F9maphh.png", gold: "https://imgur.com/iEo5vH6.png", silver: "https://imgur.com/KZAkaCL.png" },
-            white: { standard: "https://imgur.com/aJBqGPw.png", gold: "https://imgur.com/RhQXnrz.png", silver: "https://imgur.com/XXZWf5V.png" }
-        };
-
-        const detailsImages = [
-            "https://imgur.com/jqTb79Y.png", "https://imgur.com/rllKylx.png", "https://imgur.com/iDxtSX8.png",
-            "https://imgur.com/xh8ndCi.png", "https://imgur.com/Kl6mloF.png", "https://imgur.com/84Ltctb.png"
+        const leatherProducts = [
+            { id: "lth-rose-wine", type: "leather", color: "pink", name: "Rouge Rosé", price: "$450", img: "https://i.imgur.com/oetFG2D.jpeg", desc: "Rosa con detalles Vino" },
+            { id: "lth-org-blue", type: "leather", color: "orange", name: "Riviera Sunset", price: "$450", img: "https://i.imgur.com/DbfG4LG.jpeg", desc: "Naranja y Azul" },
+            { id: "lth-pink-coff", type: "leather", color: "pink", name: "Dusk & Clay", price: "$450", img: "https://i.imgur.com/8jOaNA1.jpeg", desc: "Rosa y Café" },
+            { id: "lth-blk", type: "leather", color: "black", name: "Midnight Noir", price: "$450", img: "https://i.imgur.com/26f8cc4.jpeg", desc: "Negro Clásico" },
+            { id: "lth-prp", type: "leather", color: "purple", name: "Lavender Mist", price: "$450", img: "https://i.imgur.com/O8p2vAQ.jpeg", desc: "Morado Claro" },
+            { id: "lth-wht", type: "leather", color: "white", name: "Arctic Pure", price: "$450", img: "https://i.imgur.com/kQjfrpr.jpeg", desc: "Blanco Absoluto" },
+            { id: "lth-coff-drk", type: "leather", color: "brown", name: "Espresso Deep", price: "$450", img: "https://i.imgur.com/FwCzKRU.jpeg", desc: "Café Oscuro" },
+            { id: "lth-tri-blue", type: "leather", color: "blue", name: "Aegean Tricolor", price: "$299", img: "https://i.imgur.com/6A8YnPh.jpeg", desc: "Azules y Crema" }, 
+            { id: "lth-coff", type: "leather", color: "brown", name: "Chestnut Classic", price: "$450", img: "https://i.imgur.com/GzkT5e9.jpeg", desc: "Café Medio" },
+            { id: "lth-blu-wine", type: "leather", color: "blue", name: "Royal Bordeaux", price: "$299", img: "https://i.imgur.com/mIrorgs.jpeg", desc: "Azul y Vino" }, 
+            { id: "lth-tri-org", type: "leather", color: "orange", name: "Mediterranean Voyage", price: "$299", img: "https://i.imgur.com/tHUvBYW.jpeg", desc: "Azul, Crema, Naranja" }, 
+            { id: "lth-blu-drk", type: "leather", name: "Abyss Blue", price: "$450", img: "https://i.imgur.com/GnF33co.jpeg", desc: "Azul Oscuro" },
+            { id: "lth-titan-org", type: "leather", name: "Titanium Orange", price: "$450", img: "https://i.imgur.com/t6dEVhU.jpeg", desc: "Naranja iPhone 17 Style" },
+            { id: "lth-pink-crm", type: "leather", name: "Blush Cream", price: "$299", img: "https://i.imgur.com/USnTQWe.jpeg", desc: "Rosa y Crema" }, 
+            { id: "lth-red-wine", type: "leather", name: "Burgundy Grand", price: "$450", img: "https://i.imgur.com/6XdpRhE.jpeg", desc: "Rojo Vino" },
+            { id: "lth-nvy-hr", type: "leather", name: "Nautical Heritage", price: "$259", img: "https://i.imgur.com/GR0TTLI.jpeg", desc: "Azul Marino / Interior Café" }, 
+            { id: "lth-org-crm", type: "leather", name: "Creamsicle Luxe", price: "$299", img: "https://i.imgur.com/Z6skV8g.jpeg", desc: "Naranja y Crema" }, 
+            { id: "lth-tri-ylw", type: "leather", name: "Tropical Sunrise", price: "$315", img: "https://i.imgur.com/ibE0yCh.jpeg", desc: "Amarillo, Naranja, Rosa" }, 
+            { id: "lth-ylw", type: "leather", name: "Canary Vivid", price: "$450", img: "https://i.imgur.com/A4GyVnC.jpeg", desc: "Amarillo Intenso" },
+            { id: "lth-grn", type: "leather", name: "Verde Bottega", price: "$450", img: "https://i.imgur.com/JbjjzEk.jpeg", desc: "Verde Puro" },
+            { id: "lth-blk-drk", type: "leather", name: "Obsidian Shadow", price: "$450", img: "https://i.imgur.com/sZj8ia6.jpeg", desc: "Negro Profundo" },
+            { id: "lth-panda", type: "leather", name: "Panda Contrast", price: "$299", img: "https://i.imgur.com/6KXCzdj.jpeg", desc: "Negro y Blanco" }, 
+            { id: "lth-cyn", type: "leather", name: "Electric Cyan", price: "$450", img: "https://i.imgur.com/y2V4xRx.jpeg", desc: "Azul Chicle" },
+            { id: "lth-old", type: "leather", name: "Heritage Tan", price: "$450", img: "https://i.imgur.com/666Nokk.jpeg", desc: "Old Money Style" },
+        ];
+        const steelProducts = [
+            { id: "stl-stripe-blk", type: "steel", color: "silver", name: "Métal Duo Noir", price: "$399", img: "https://i.imgur.com/GtKHK1l.jpeg", desc: "Plata con línea negra" },
+            { id: "stl-stripe-gld", type: "steel", color: "gold", name: "Métal Duo Or", price: "$399", img: "https://i.imgur.com/OuDfSjd.jpeg", desc: "Plata con línea dorada" },
+            { id: "stl-stripe-pnk", type: "steel", color: "pink", name: "Métal Duo Rose", price: "$399", img: "https://i.imgur.com/XdOZWKN.jpeg", desc: "Plata con línea rosa" },
+            { id: "stl-starlight", type: "steel", color: "gold", name: "Lumière Stellaire", price: "$359", img: "https://i.imgur.com/C9pzKAo.jpeg", desc: "Starlight Champagne" },
+            { id: "stl-titan", type: "steel", color: "silver", name: "Titane Brut", price: "$359", img: "https://i.imgur.com/Gt61Uh4.jpeg", desc: "Acabado Titanio" },
+            { id: "stl-aqua", type: "steel", color: "green", name: "Aqua Marine", price: "$359", img: "https://i.imgur.com/mzdCuS3.jpeg", desc: "Verde Agua" },
+            { id: "stl-grn-drk", type: "steel", color: "green", name: "Vert Tarraco", price: "$359", img: "https://i.imgur.com/T9C7BD0.jpeg", desc: "Verde Bosque Metálico" },
+            { id: "stl-blk", type: "steel", color: "black", name: "Noir Infini", price: "$359", img: "https://i.imgur.com/VHYFYQd.jpeg", desc: "Negro Total" },
+            { id: "stl-blu", type: "steel", color: "blue", name: "Bleu Océan", price: "$359", img: "https://i.imgur.com/ZYmOsVO.jpeg", desc: "Azul Eléctrico" },
+            { id: "stl-gld", type: "steel", color: "gold", name: "Or Classique", price: "$359", img: "https://i.imgur.com/K4LPFFt.jpeg", desc: "Dorado Puro" },
+            { id: "stl-midnight", type: "steel", color: "blue", name: "Minuit Métallique", price: "$359", img: "https://i.imgur.com/HSjuxdE.jpeg", desc: "Azul Medianoche" },
+            { id: "stl-rose-gld", type: "steel", color: "pink", name: "Or Rose", price: "$359", img: "https://i.imgur.com/g7AXy9m.jpeg", desc: "Rose Gold" },
+            { id: "stl-pnk", type: "steel", name: "Rose Métal", price: "$359", img: "https://i.imgur.com/5ove4ku.jpeg", desc: "Rosa Suave" },
+            { id: "stl-slv", type: "steel", color: "silver", name: "Argent Pur", price: "$359", img: "https://i.imgur.com/PnYTzC9.jpeg", desc: "Plata Clásica" },
+        ];
+        const caseProducts = [
+            { id: "case-monaco", type: "case", color: "grey", name: "Monaco GT", price: "$299", img: "https://i.imgur.com/XwgjP4b.jpeg", desc: "Gris Sport con Franja" },
+            { id: "case-espresso", type: "case", color: "brown", name: "Espresso Duo", price: "$299", img: "https://i.imgur.com/JfOHQ3y.jpeg", desc: "Café Bitono" },
+            { id: "case-carbon", type: "case", color: "black", name: "Phantom Carbon", price: "$299", img: "https://i.imgur.com/REPAm8V.jpeg", desc: "Fibra de Carbono Negra" },
+            { id: "case-alps", type: "case", color: "red", name: "Alps Sunset", price: "$329", img: "https://i.imgur.com/W71NAmc.jpeg", desc: "Diseño Montaña Rojo" },
+            { id: "case-nordic", type: "case", color: "blue", name: "Nordic Peaks", price: "$329", img: "https://i.imgur.com/E20tmfO.jpeg", desc: "Diseño Montaña Azul" },
+            { id: "case-bordeaux", type: "case", color: "black", name: "Bordeaux Accent", price: "$299", img: "https://i.imgur.com/Xk7aJVF.jpeg", desc: "Negro con detalle Vino" },
+            { id: "case-heritage", type: "case", color: "black", name: "Heritage Stripe", price: "$299", img: "https://i.imgur.com/WRlMIPQ.jpeg", desc: "Franja Tricolor" },
+            { id: "case-urban", type: "case", color: "black", name: "Urban Camo", price: "$329", img: "https://i.imgur.com/q8wF3Qa.jpeg", desc: "Franja Monocromática" },
         ];
 
         const Navbar = () => (
             <nav className="fixed w-full z-50 py-6 px-8 flex justify-between items-center bg-[#050505]/95 backdrop-blur border-b border-white/5">
-                <a href="catalog.html" className="text-gray-400 text-xs tracking-widest hover:text-white uppercase flex items-center">
-                    &larr; <span className="ml-2">Volver al Catálogo</span>
-                </a>
-                <a href="index.html">
-                    <img src="https://imgur.com/JZmpC36.png" alt="VANTO" className="h-8 invert brightness-200" />
-                </a>
+                <a href="catalogo.html" className="text-gray-400 text-xs tracking-widest hover:text-white uppercase flex items-center">&larr; <span className="ml-2">Catálogo</span></a>
+                <a href="index.html"><img src="https://imgur.com/JZmpC36.png" alt="VANTO" className="h-8 md:h-10 invert brightness-200" /></a>
                 <div className="w-12"></div>
             </nav>
         );
 
-        const ProductPage = () => {
-            const [color, setColor] = useState('black');
-            const [frame, setFrame] = useState('standard');
-            const [mainImage, setMainImage] = useState(variants['black']['standard']);
-
-            // Auto-select based on URL params
-            useEffect(() => {
-                const params = new URLSearchParams(window.location.search);
-                const colorParam = params.get('color');
-                const frameParam = params.get('frame');
-
-                if (colorParam && variants[colorParam]) {
-                    setColor(colorParam);
-                }
-                if (frameParam) {
-                    setFrame(frameParam);
-                }
-            }, []);
-
-            useEffect(() => {
-                const img = (variants[color] && variants[color][frame]) ? variants[color][frame] : variants[color]['standard'];
-                setMainImage(img);
-            }, [color, frame]);
-
+        // --- VISTA DIAMOND (GOLDEN AURA) ---
+        const DiamondView = ({ product }) => {
+            const [size, setSize] = useState(null);
             const handleWhatsAppBuy = () => {
-                const message = `Hola Vanto, estoy interesado en el *Diamond Mod Kit*.%0A%0A- Color: ${color.toUpperCase()}%0A- Acabado: ${frame.toUpperCase()}%0A- Precio: $3,799 MXN%0A%0A¿Cuál es el costo de envío a mi ciudad?`;
+                if (!size) { alert("Por favor selecciona el tamaño."); return; }
+                const message = `Hola Vanto, quiero la pieza maestra *${product.name}* (L'Édition Royale).%0A- Modelo: ${product.desc}%0A- Tamaño: ${size}%0A- Precio: ${product.price}%0A%0A¿Cuál es el proceso de envío asegurado?`;
                 window.open(`https://wa.me/521XXXXXXXXXX?text=${message}`, '_blank');
             };
-
             return (
-                <div className="pt-32 pb-20 container mx-auto px-6">
-                    <div className="flex flex-col lg:flex-row gap-16">
-                        {/* LEFT: IMAGES */}
-                        <div className="w-full lg:w-3/5">
-                            <div className="aspect-square bg-[#111] border border-white/5 mb-4 relative overflow-hidden group rounded-sm">
-                                <img src={mainImage} alt="Main Product" className="w-full h-full object-contain p-8 group-hover:scale-105 transition-transform duration-700" />
-                            </div>
-                            <div className="grid grid-cols-4 md:grid-cols-6 gap-2">
-                                {detailsImages.map((img, i) => (
-                                    <div key={i} className="aspect-square bg-[#111] border border-white/10 cursor-pointer hover:border-[#D4AF37] transition-colors" onClick={() => setMainImage(img)}>
-                                        <img src={img} className="w-full h-full object-cover opacity-70 hover:opacity-100" />
-                                    </div>
-                                ))}
+                <div className="flex flex-col lg:flex-row gap-16 animate-fade-in relative">
+                    <div className="aura-gold"></div>
+                    <div className="w-full lg:w-3/5 z-10">
+                        <div className="aspect-square bg-[#111]/80 backdrop-blur-sm border border-[#D4AF37]/30 relative overflow-hidden group rounded-sm p-10 shadow-[0_0_50px_rgba(212,175,55,0.1)]">
+                            <img src={product.img} alt={product.name} className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-700 drop-shadow-2xl" />
+                            <div className="absolute top-4 left-4 bg-gradient-to-r from-[#D4AF37] to-[#F1C40F] text-black text-[9px] font-bold px-3 py-1 uppercase tracking-widest shadow-lg">L'Édition Royale</div>
+                        </div>
+                    </div>
+                    <div className="w-full lg:w-2/5 flex flex-col justify-center z-10">
+                        <span className="text-[#D4AF37] text-xs font-bold tracking-[0.3em] uppercase mb-2">High Jewelry Tech</span>
+                        <h1 className="text-5xl serif text-white italic mb-2 text-shadow-gold">{product.name}</h1>
+                        <p className="text-3xl text-[#D4AF37] font-light mb-6">{product.price} <span className="text-sm text-gray-400 ml-2">MXN</span></p>
+                        <p className="text-gray-300 font-light text-sm leading-relaxed mb-8 border-b border-[#D4AF37]/30 pb-8">{product.desc}. Una obra maestra de ingeniería. Acero inoxidable grado quirúrgico con incrustaciones de zirconia.</p>
+                        <div className="mb-8">
+                             <span className="text-xs uppercase tracking-widest text-[#D4AF37] mb-3 block">Seleccione Calibre</span>
+                            <div className="flex flex-col gap-3">
+                                <button onClick={() => setSize('44mm')} className={`w-full py-4 border text-xs uppercase tracking-widest transition-all ${size === '44mm' ? 'bg-[#D4AF37] text-black border-[#D4AF37] font-bold' : 'border-[#D4AF37]/30 text-gray-300 hover:border-[#D4AF37]'}`}>For Apple Watch 44mm</button>
+                                <button onClick={() => setSize('45mm')} className={`w-full py-4 border text-xs uppercase tracking-widest transition-all ${size === '45mm' ? 'bg-[#D4AF37] text-black border-[#D4AF37] font-bold' : 'border-[#D4AF37]/30 text-gray-300 hover:border-[#D4AF37]'}`}>For Apple Watch 45mm</button>
                             </div>
                         </div>
-
-                        {/* RIGHT: INFO */}
-                        <div className="w-full lg:w-2/5 flex flex-col h-full sticky top-32">
-                            <h2 className="text-[#D4AF37] text-xs font-bold tracking-[0.3em] uppercase mb-2">Luxury Mod Series</h2>
-                            <h1 className="text-4xl serif text-white italic mb-2">Diamond Kit Royal</h1>
-                            <p className="text-2xl text-white font-light mb-6">$3,799 <span className="text-sm text-gray-500 ml-2">MXN</span></p>
-
-                            <p className="text-gray-400 font-light text-sm leading-relaxed mb-8 border-b border-white/10 pb-8">
-                                La máxima expresión de lujo para tu Apple Watch. Caja de acero inoxidable 316L con incrustaciones de zirconia cúbica de corte diamante. Incluye herramientas de precisión para un ajuste perfecto.
-                            </p>
-
-                            <div className="mb-8">
-                                <span className="text-xs uppercase tracking-widest text-gray-500 mb-3 block">Color de Correa</span>
-                                <div className="flex gap-3">
-                                    {['black', 'green', 'orange', 'red', 'white'].map(c => (
-                                        <button key={c} onClick={() => setColor(c)} className={`w-8 h-8 rounded-full border border-white/20 ${color === c ? 'selected-ring' : ''}`} style={{backgroundColor: c === 'black' ? '#222' : c === 'white' ? '#eee' : c}}></button>
-                                    ))}
-                                </div>
-                            </div>
-
-                            <div className="mb-10">
-                                <span className="text-xs uppercase tracking-widest text-gray-500 mb-3 block">Acabado del Marco</span>
-                                <div className="flex gap-3">
-                                    {['standard', 'gold', 'silver'].map(f => (
-                                        <button key={f} onClick={() => setFrame(f)} className={`px-4 py-2 border text-xs uppercase tracking-widest transition-all ${frame === f ? 'bg-white text-black border-white' : 'border-white/20 text-gray-400 hover:border-white'}`}>{f}</button>
-                                    ))}
-                                </div>
-                            </div>
-
-                            <button onClick={handleWhatsAppBuy} className="w-full bg-[#25D366] hover:bg-[#20bd5a] text-white py-4 flex items-center justify-center gap-3 transition-colors mb-4 font-bold tracking-widest text-sm">
-                                COMPRAR POR WHATSAPP
-                            </button>
-                            
-                            <div className="bg-[#111] p-6 border border-white/5 mt-4">
-                                <div className="flex items-center gap-3 mb-2">
-                                    <span className="text-white text-xs font-bold uppercase tracking-wider">Envío Internacional</span>
-                                </div>
-                                <p className="text-[10px] text-gray-400">
-                                    Entrega estimada: <strong>10 a 18 días hábiles</strong>. El costo se calculará al confirmar tu dirección en el chat.
-                                </p>
-                            </div>
-                        </div>
+                        <button onClick={handleWhatsAppBuy} className="w-full bg-gradient-to-r from-[#D4AF37] to-[#B7950B] hover:to-[#D4AF37] text-black py-4 font-bold tracking-widest text-sm transition-all shadow-[0_0_20px_rgba(212,175,55,0.4)]">ADQUIRIR PIEZA ÚNICA</button>
                     </div>
                 </div>
             );
         };
 
-        const RelatedProducts = () => (
-            <section className="py-20 bg-[#080808] border-t border-white/5 overflow-hidden">
-                <div className="container mx-auto px-6">
-                    <h3 className="text-2xl serif text-white mb-10 text-center italic">Combínalo con Essentials</h3>
-                    <div className="flex overflow-x-auto gap-6 pb-8 no-scrollbar snap-x">
-                        {essentialsImages.map((img, idx) => (
-                            <div key={idx} className="min-w-[200px] md:min-w-[250px] snap-center cursor-pointer group">
-                                <div className="aspect-[4/5] bg-[#111] overflow-hidden mb-4 relative">
-                                    <img src={img} className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" />
-                                    <span className="absolute bottom-2 left-2 text-white text-xs font-bold bg-black/50 px-2 py-1 backdrop-blur">$239 MXN</span>
-                                </div>
-                                <h4 className="text-gray-400 text-xs uppercase tracking-widest text-center group-hover:text-[#D4AF37]">Vanto Essential</h4>
+        // --- VISTA ACERO/STEEL ---
+        const SteelView = ({ product }) => {
+            const [option, setOption] = useState(null);
+            const handleWhatsAppBuy = () => {
+                if (!option) { alert("Por favor selecciona una opción."); return; }
+                const message = `Hola Vanto, me interesa la correa de acero *${product.name}*.%0A- Opción: ${option}%0A- Precio: ${product.price}%0A¿Disponibilidad inmediata?`;
+                window.open(`https://wa.me/521XXXXXXXXXX?text=${message}`, '_blank');
+            };
+            return (
+                <div className="flex flex-col lg:flex-row gap-16 animate-fade-in">
+                    <div className="w-full lg:w-3/5"><div className="aspect-[4/5] bg-[#111] border border-white/5 relative overflow-hidden group rounded-sm"><img src={product.img} alt={product.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-1000" /><div className="absolute top-4 right-4 bg-gray-200 text-black text-[9px] font-bold px-3 py-1 uppercase tracking-widest">Acier</div></div></div>
+                    <div className="w-full lg:w-2/5 flex flex-col justify-center">
+                        <span className="text-[#D4AF37] text-xs font-bold tracking-[0.3em] uppercase mb-2">L'Acier Moderne</span>
+                        <h1 className="text-4xl serif text-white italic mb-2">{product.name}</h1>
+                        <p className="text-2xl text-white font-light mb-6">{product.price} <span className="text-sm text-gray-500 ml-2">MXN</span></p>
+                        <div className="border-l-2 border-gray-600 pl-4 mb-8"><p className="text-gray-400 font-light text-sm">"Diseño de eslabones sólidos. Incluye herramienta de ajuste para un fit personalizado perfecto."</p></div>
+                        <div className="mb-8">
+                             <span className="text-xs uppercase tracking-widest text-gray-500 mb-3 block">Compatibilidad</span>
+                            <div className="grid grid-cols-1 gap-3">
+                                <button onClick={() => setOption('Opción 1: 38/40/41mm')} className={`w-full py-3 border text-[10px] uppercase tracking-widest transition-all ${option?.includes('Opción 1') ? 'selected-btn' : 'border-white/20 text-gray-400 hover:border-white'}`}>Opción 1: 38mm / 40mm / 41mm</button>
+                                <button onClick={() => setOption('Opción 2: 42/44/45/49mm')} className={`w-full py-3 border text-[10px] uppercase tracking-widest transition-all ${option?.includes('Opción 2') ? 'selected-btn' : 'border-white/20 text-gray-400 hover:border-white'}`}>Opción 2: 42mm / 44mm / 45mm / 49mm</button>
+                                <button onClick={() => setOption('Opción 3: Series 10 42mm')} className={`w-full py-3 border text-[10px] uppercase tracking-widest transition-all ${option?.includes('Opción 3') ? 'selected-btn' : 'border-white/20 text-gray-400 hover:border-white'}`}>Opción 3: Series 10 (42mm)</button>
+                                <button onClick={() => setOption('Opción 4: Series 10 46mm')} className={`w-full py-3 border text-[10px] uppercase tracking-widest transition-all ${option?.includes('Opción 4') ? 'selected-btn' : 'border-white/20 text-gray-400 hover:border-white'}`}>Opción 4: Series 10 (46mm)</button>
                             </div>
-                        ))}
+                        </div>
+                        <button onClick={handleWhatsAppBuy} className="w-full bg-[#25D366] hover:bg-[#20bd5a] text-white py-4 font-bold tracking-widest text-sm transition-colors mb-4">SOLICITAR DISPONIBILIDAD</button>
                     </div>
                 </div>
-            </section>
-        );
+            );
+        };
+
+        // --- VISTA CASE/FUNDA ---
+        const CaseView = ({ product }) => {
+            const [model, setModel] = useState(null);
+            const handleWhatsAppBuy = () => {
+                if (!model) { alert("Por favor selecciona el modelo de iPhone."); return; }
+                const message = `Hola Vanto, deseo la funda *${product.name}* (L'Armure Carbone).%0A- Modelo iPhone: ${model}%0A- Precio: ${product.price}%0A¿Envío inmediato?`;
+                window.open(`https://wa.me/521XXXXXXXXXX?text=${message}`, '_blank');
+            };
+            return (
+                <div className="flex flex-col lg:flex-row gap-16 animate-fade-in">
+                    <div className="w-full lg:w-3/5"><div className="aspect-[4/5] bg-[#111] border border-white/5 relative overflow-hidden group rounded-sm"><img src={product.img} alt={product.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-1000" /><div className="absolute top-4 right-4 bg-white/20 backdrop-blur text-white text-[9px] font-bold px-3 py-1 uppercase tracking-widest">L'Armure</div></div></div>
+                    <div className="w-full lg:w-2/5 flex flex-col justify-center">
+                        <span className="text-[#D4AF37] text-xs font-bold tracking-[0.3em] uppercase mb-2">L'Armure Carbone</span>
+                        <h1 className="text-4xl serif text-white italic mb-2">{product.name}</h1>
+                        <p className="text-2xl text-white font-light mb-6">{product.price} <span className="text-sm text-gray-500 ml-2">MXN</span></p>
+                        <p className="text-gray-400 font-light text-sm leading-relaxed mb-8 border-b border-white/10 pb-8">{product.desc}. Tacto de seda, protección de carbono. Compatible con MagSafe.</p>
+                        <div className="mb-8">
+                             <span className="text-xs uppercase tracking-widest text-gray-500 mb-3 block">Modelo de iPhone</span>
+                            <div className="grid grid-cols-2 gap-3">
+                                {['iPhone 15 Pro Max', 'iPhone 15 Pro', 'iPhone 15', 'iPhone 14 Pro Max', 'iPhone 14 Pro', 'iPhone 14', 'iPhone 13 Pro Max', 'iPhone 13'].map(m => (
+                                    <button key={m} onClick={() => setModel(m)} className={`py-3 border text-[10px] uppercase tracking-widest transition-all ${model === m ? 'selected-btn' : 'border-white/20 text-gray-400 hover:border-white'}`}>{m}</button>
+                                ))}
+                            </div>
+                        </div>
+                        <button onClick={handleWhatsAppBuy} className="w-full bg-[#25D366] hover:bg-[#20bd5a] text-white py-4 font-bold tracking-widest text-sm transition-colors mb-4">COMPRAR AHORA</button>
+                    </div>
+                </div>
+            );
+        };
+
+        // --- VISTA LEATHER ---
+        const LeatherView = ({ product }) => {
+            const [sizeOption, setSizeOption] = useState(null);
+            const handleWhatsAppBuy = () => {
+                if (!sizeOption) { alert("Por favor selecciona tu grupo de tamaño."); return; }
+                const message = `Hola Vanto, me interesa la correa de piel *${product.name}*.%0A- Opción: ${sizeOption}%0A- Precio: ${product.price}`;
+                window.open(`https://wa.me/521XXXXXXXXXX?text=${message}`, '_blank');
+            };
+            return (
+                <div className="flex flex-col lg:flex-row gap-16 animate-fade-in">
+                    <div className="w-full lg:w-3/5"><div className="aspect-[4/5] bg-[#111] border border-white/5 relative overflow-hidden group rounded-sm"><img src={product.img} alt={product.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-1000" /></div></div>
+                    <div className="w-full lg:w-2/5 flex flex-col justify-center">
+                        <span className="text-[#D4AF37] text-xs font-bold tracking-[0.3em] uppercase mb-2">Leather Atelier</span>
+                        <h1 className="text-4xl serif text-white italic mb-2">{product.name}</h1>
+                        <p className="text-2xl text-white font-light mb-6">{product.price} <span className="text-sm text-gray-500 ml-2">MXN</span></p>
+                        <div className="border-l-2 border-[#D4AF37] pl-4 mb-8"><p className="text-gray-300 font-light text-lg italic">"{product.desc}"</p></div>
+                         <div className="mb-8">
+                             <span className="text-xs uppercase tracking-widest text-gray-500 mb-3 block">Selecciona tu Medida</span>
+                            <div className="flex flex-col gap-3">
+                                <button onClick={() => setSizeOption('Opción 1 (40/41/42mm S10)')} className={`w-full py-4 border text-[10px] md:text-xs uppercase tracking-widest transition-all ${sizeOption?.includes('Opción 1') ? 'selected-btn' : 'border-white/20 text-gray-400 hover:border-white'}`}>Opción 1: 40mm / 41mm / S10 42mm</button>
+                                <button onClick={() => setSizeOption('Opción 2 (42-49mm)')} className={`w-full py-4 border text-[10px] md:text-xs uppercase tracking-widest transition-all ${sizeOption?.includes('Opción 2') ? 'selected-btn' : 'border-white/20 text-gray-400 hover:border-white'}`}>Opción 2: 42mm / 44mm / 45mm / 46mm / 49mm</button>
+                            </div>
+                        </div>
+                        <button onClick={handleWhatsAppBuy} className="w-full bg-[#25D366] hover:bg-[#20bd5a] text-white py-4 font-bold tracking-widest text-sm transition-colors mb-4">SOLICITAR PIEZA</button>
+                    </div>
+                </div>
+            );
+        };
+
+        const ProductPage = () => {
+            const [selectedProduct, setSelectedProduct] = useState(null);
+            useEffect(() => {
+                const urlParams = new URLSearchParams(window.location.search);
+                const id = urlParams.get('id');
+                const all = [...diamondProducts, ...leatherProducts, ...steelProducts, ...caseProducts];
+                const found = all.find(p => p.id === id);
+                setSelectedProduct(found || diamondProducts[0]);
+            }, []);
+
+            if (!selectedProduct) return <div className="text-white text-center pt-40">Cargando la experiencia...</div>;
+
+            return (
+                <div className="pt-32 pb-20 container mx-auto px-6 min-h-screen">
+                    {selectedProduct.type === 'diamond' && <DiamondView product={selectedProduct} />}
+                    {selectedProduct.type === 'steel' && <SteelView product={selectedProduct} />}
+                    {selectedProduct.type === 'leather' && <LeatherView product={selectedProduct} />}
+                    {selectedProduct.type === 'case' && <CaseView product={selectedProduct} />}
+                </div>
+            );
+        };
 
         const Footer = () => (
              <footer className="bg-[#020202] border-t border-white/5 py-12 text-center text-gray-600 text-[10px] uppercase tracking-widest">
-                &copy; 2025 Vanto. Designed for Luxury.
+                &copy; 2025 Vanto. L'Art de Vivre.
             </footer>
         );
 
         ReactDOM.createRoot(document.getElementById('root')).render(
-            <div><Navbar /><ProductPage /><RelatedProducts /><Footer /></div>
+            <div><Navbar /><ProductPage /><Footer /></div>
         );
     </script>
 </body>

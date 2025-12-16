@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Catálogo Completo | Vanto</title>
+    <title>Le Catalogue | Vanto</title>
     <link rel="icon" type="image/png" href="https://imgur.com/kbF7hve.png">
     
     <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
@@ -16,124 +16,174 @@
     <style>
         body { background-color: #050505; color: #E5E5E5; font-family: 'Lato', sans-serif; }
         .serif { font-family: 'Playfair Display', serif; }
-        .fade-in { animation: fadeIn 0.8s ease-out forwards; opacity: 0; }
-        @keyframes fadeIn { to { opacity: 1; } }
+        .fade-in { animation: fadeIn 0.8s cubic-bezier(0.4, 0, 0.2, 1) forwards; opacity: 0; transform: translateY(20px); }
+        @keyframes fadeIn { to { opacity: 1; transform: translateY(0); } }
+        .liquid-glass { background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid rgba(255, 255, 255, 0.08); box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1); }
+        .card-hover:hover { box-shadow: 0 0 25px rgba(212, 175, 55, 0.1); border-color: rgba(212, 175, 55, 0.3); }
     </style>
 </head>
 <body>
     <div id="root"></div>
 
     <script type="text/babel">
-        // --- BASE DE DATOS DE PRODUCTOS ---
-        // Desglosamos las colecciones en productos individuales
+        const { useState, useEffect } = React;
+
+        // --- BASE DE DATOS MAESTRA ---
         
+        // 1. L'ÉDITION ROYALE (Diamond)
         const diamondProducts = [
-            { name: "Diamond Kit - Obsidian Black", price: "$3,799", img: "https://imgur.com/mTZrfNk.png", params: "color=black&frame=standard", desc: "Acero Negro Mate" },
-            { name: "Diamond Kit - Royal Gold Black", price: "$3,799", img: "https://imgur.com/sSVEjXx.png", params: "color=black&frame=gold", desc: "Marco Dorado 18K Style" },
-            { name: "Diamond Kit - Sterling Silver Black", price: "$3,799", img: "https://imgur.com/BVxeZjT.png", params: "color=black&frame=silver", desc: "Acero Pulido Espejo" },
-            
-            { name: "Diamond Kit - Neon Green", price: "$3,799", img: "https://imgur.com/4XHXHEr.png", params: "color=green&frame=standard", desc: "Vibrant Energy" },
-            { name: "Diamond Kit - Silver Green", price: "$3,799", img: "https://imgur.com/6uOtpc8.png", params: "color=green&frame=silver", desc: "Contraste Futurista" },
-            
-            { name: "Diamond Kit - Sunset Orange", price: "$3,799", img: "https://imgur.com/Ecasdst.png", params: "color=orange&frame=standard", desc: "Sport Luxury" },
-            { name: "Diamond Kit - Gold Orange", price: "$3,799", img: "https://imgur.com/49SZTDb.png", params: "color=orange&frame=gold", desc: "Edición Limitada" },
-            
-            { name: "Diamond Kit - Imperial Red", price: "$3,799", img: "https://imgur.com/F9maphh.png", params: "color=red&frame=standard", desc: "Pasión & Poder" },
-            { name: "Diamond Kit - Silver Red", price: "$3,799", img: "https://imgur.com/KZAkaCL.png", params: "color=red&frame=silver", desc: "Alto Impacto" },
-            
-            { name: "Diamond Kit - Pure White", price: "$3,799", img: "https://imgur.com/aJBqGPw.png", params: "color=white&frame=standard", desc: "Minimalismo Puro" },
-            { name: "Diamond Kit - Gold White", price: "$3,799", img: "https://imgur.com/RhQXnrz.png", params: "color=white&frame=gold", desc: "Elegancia Clásica" },
+            { id: "dk-black-std", type: "diamond", color: "black", name: "Royal Obsidian", price: "$3,799", img: "https://imgur.com/mTZrfNk.png", desc: "Acero Negro Mate" },
+            { id: "dk-black-gold", type: "diamond", color: "gold", name: "Royal Gold Noir", price: "$3,799", img: "https://imgur.com/sSVEjXx.png", desc: "Marco Oro 18K Style" },
+            { id: "dk-black-slv", type: "diamond", color: "silver", name: "Royal Silver Noir", price: "$3,799", img: "https://imgur.com/BVxeZjT.png", desc: "Plata Espejo" },
+            { id: "dk-red-std", type: "diamond", color: "red", name: "Imperial Crimson", price: "$3,799", img: "https://imgur.com/F9maphh.png", desc: "Rojo Intenso" },
+            { id: "dk-red-gold", type: "diamond", color: "gold", name: "Imperial Gold Red", price: "$3,799", img: "https://imgur.com/iEo5vH6.png", desc: "Lujo Asiático" },
+            { id: "dk-red-slv", type: "diamond", color: "silver", name: "Imperial Silver Red", price: "$3,799", img: "https://imgur.com/KZAkaCL.png", desc: "Alto Contraste" },
+            { id: "dk-white-std", type: "diamond", color: "white", name: "Arctic Pure", price: "$3,799", img: "https://imgur.com/aJBqGPw.png", desc: "Blanco Minimalista" },
+            { id: "dk-white-gold", type: "diamond", color: "gold", name: "Arctic Gold", price: "$3,799", img: "https://imgur.com/RhQXnrz.png", desc: "Elegancia Pura" },
+            { id: "dk-white-slv", type: "diamond", color: "silver", name: "Arctic Silver", price: "$3,799", img: "https://imgur.com/XXZWf5V.png", desc: "Clean Look" },
+            { id: "dk-org-std", type: "diamond", color: "orange", name: "Sunset Sport", price: "$3,799", img: "https://imgur.com/Ecasdst.png", desc: "Naranja Vibrante" },
+            { id: "dk-org-gold", type: "diamond", color: "gold", name: "Sunset Gold", price: "$3,799", img: "https://imgur.com/49SZTDb.png", desc: "Exclusivo" },
+            { id: "dk-org-slv", type: "diamond", color: "silver", name: "Sunset Silver", price: "$3,799", img: "https://imgur.com/pDk7Gkq.png", desc: "Moderno" },
+            { id: "dk-grn-std", type: "diamond", color: "green", name: "Neon Venom", price: "$3,799", img: "https://imgur.com/4XHXHEr.png", desc: "Verde Ácido" },
+            { id: "dk-grn-slv", type: "diamond", color: "silver", name: "Neon Silver", price: "$3,799", img: "https://imgur.com/6uOtpc8.png", desc: "Futurista" },
         ];
 
-        const essentialProducts = [
-            { name: "Essential Strap - Azure", price: "$239", img: "https://i.imgur.com/SSK1Afy.jpeg" },
-            { name: "Essential Strap - Lava", price: "$239", img: "https://i.imgur.com/a1j8inY.jpeg" },
-            { name: "Essential Strap - Mint", price: "$239", img: "https://i.imgur.com/k9vp5hV.jpeg" },
-            { name: "Essential Strap - Slate", price: "$239", img: "https://i.imgur.com/TP7sIem.jpeg" },
-            { name: "Essential Strap - Midnight", price: "$239", img: "https://i.imgur.com/GMJMfm1.jpeg" },
-            { name: "Essential Strap - Blush", price: "$239", img: "https://i.imgur.com/0XJC1I9.jpeg" },
-            { name: "Essential Strap - Coral", price: "$239", img: "https://i.imgur.com/6JH0Wof.jpeg" },
-            { name: "Essential Strap - Sand", price: "$239", img: "https://i.imgur.com/fSdEgeF.jpeg" },
+        // 2. LEATHER ATELIER
+        const leatherProducts = [
+            { id: "lth-rose-wine", type: "leather", color: "pink", name: "Rouge Rosé", price: "$450", img: "https://i.imgur.com/oetFG2D.jpeg", desc: "Rosa con detalles Vino" },
+            { id: "lth-org-blue", type: "leather", color: "orange", name: "Riviera Sunset", price: "$450", img: "https://i.imgur.com/DbfG4LG.jpeg", desc: "Naranja y Azul" },
+            { id: "lth-pink-coff", type: "leather", color: "pink", name: "Dusk & Clay", price: "$450", img: "https://i.imgur.com/8jOaNA1.jpeg", desc: "Rosa y Café" },
+            { id: "lth-blk", type: "leather", color: "black", name: "Midnight Noir", price: "$450", img: "https://i.imgur.com/26f8cc4.jpeg", desc: "Negro Clásico" },
+            { id: "lth-prp", type: "leather", color: "purple", name: "Lavender Mist", price: "$450", img: "https://i.imgur.com/O8p2vAQ.jpeg", desc: "Morado Claro" },
+            { id: "lth-wht", type: "leather", color: "white", name: "Arctic Pure", price: "$450", img: "https://i.imgur.com/kQjfrpr.jpeg", desc: "Blanco Absoluto" },
+            { id: "lth-coff-drk", type: "leather", color: "brown", name: "Espresso Deep", price: "$450", img: "https://i.imgur.com/FwCzKRU.jpeg", desc: "Café Oscuro" },
+            { id: "lth-tri-blue", type: "leather", color: "blue", name: "Aegean Tricolor", price: "$299", img: "https://i.imgur.com/6A8YnPh.jpeg", desc: "Azules y Crema" },
+            { id: "lth-coff", type: "leather", color: "brown", name: "Chestnut Classic", price: "$450", img: "https://i.imgur.com/GzkT5e9.jpeg", desc: "Café Medio" },
+            { id: "lth-blu-wine", type: "leather", color: "blue", name: "Royal Bordeaux", price: "$299", img: "https://i.imgur.com/mIrorgs.jpeg", desc: "Azul y Vino" },
+            { id: "lth-tri-org", type: "leather", color: "orange", name: "Mediterranean", price: "$299", img: "https://i.imgur.com/tHUvBYW.jpeg", desc: "Azul, Crema, Naranja" },
+            { id: "lth-blu-drk", type: "leather", color: "blue", name: "Abyss Blue", price: "$450", img: "https://i.imgur.com/GnF33co.jpeg", desc: "Azul Oscuro" },
+            { id: "lth-titan-org", type: "leather", color: "orange", name: "Titanium Orange", price: "$450", img: "https://i.imgur.com/t6dEVhU.jpeg", desc: "Naranja iPhone 17 Style" },
+            { id: "lth-pink-crm", type: "leather", color: "pink", name: "Blush Cream", price: "$299", img: "https://i.imgur.com/USnTQWe.jpeg", desc: "Rosa y Crema" },
+            { id: "lth-red-wine", type: "leather", color: "red", name: "Burgundy Grand", price: "$450", img: "https://i.imgur.com/6XdpRhE.jpeg", desc: "Rojo Vino" },
+            { id: "lth-nvy-hr", type: "leather", color: "blue", name: "Nautical Heritage", price: "$259", img: "https://i.imgur.com/GR0TTLI.jpeg", desc: "Azul Marino / Interior Café" },
+            { id: "lth-org-crm", type: "leather", color: "orange", name: "Creamsicle Luxe", price: "$299", img: "https://i.imgur.com/Z6skV8g.jpeg", desc: "Naranja y Crema" },
+            { id: "lth-tri-ylw", type: "leather", color: "yellow", name: "Tropical Sunrise", price: "$315", img: "https://i.imgur.com/ibE0yCh.jpeg", desc: "Amarillo, Naranja, Rosa" },
+            { id: "lth-ylw", type: "leather", color: "yellow", name: "Canary Vivid", price: "$450", img: "https://i.imgur.com/A4GyVnC.jpeg", desc: "Amarillo Intenso" },
+            { id: "lth-grn", type: "leather", color: "green", name: "Verde Bottega", price: "$450", img: "https://i.imgur.com/JbjjzEk.jpeg", desc: "Verde Puro" },
+            { id: "lth-blk-drk", type: "leather", color: "black", name: "Obsidian Shadow", price: "$450", img: "https://i.imgur.com/sZj8ia6.jpeg", desc: "Negro Profundo" },
+            { id: "lth-panda", type: "leather", color: "white", name: "Panda Contrast", price: "$299", img: "https://i.imgur.com/6KXCzdj.jpeg", desc: "Negro y Blanco" },
+            { id: "lth-cyn", type: "leather", color: "blue", name: "Electric Cyan", price: "$450", img: "https://i.imgur.com/y2V4xRx.jpeg", desc: "Azul Chicle" },
+            { id: "lth-old", type: "leather", color: "brown", name: "Heritage Tan", price: "$450", img: "https://i.imgur.com/666Nokk.jpeg", desc: "Old Money Style" },
         ];
+
+        // 3. L'ACIER MODERNE
+        const steelProducts = [
+            { id: "stl-stripe-blk", type: "steel", color: "silver", name: "Métal Duo Noir", price: "$399", img: "https://i.imgur.com/GtKHK1l.jpeg", desc: "Plata con línea negra" },
+            { id: "stl-stripe-gld", type: "steel", color: "gold", name: "Métal Duo Or", price: "$399", img: "https://i.imgur.com/OuDfSjd.jpeg", desc: "Plata con línea dorada" },
+            { id: "stl-stripe-pnk", type: "steel", color: "pink", name: "Métal Duo Rose", price: "$399", img: "https://i.imgur.com/XdOZWKN.jpeg", desc: "Plata con línea rosa" },
+            { id: "stl-starlight", type: "steel", color: "gold", name: "Lumière Stellaire", price: "$359", img: "https://i.imgur.com/C9pzKAo.jpeg", desc: "Starlight Champagne" },
+            { id: "stl-titan", type: "steel", color: "silver", name: "Titane Brut", price: "$359", img: "https://i.imgur.com/Gt61Uh4.jpeg", desc: "Acabado Titanio" },
+            { id: "stl-aqua", type: "steel", color: "green", name: "Aqua Marine", price: "$359", img: "https://i.imgur.com/mzdCuS3.jpeg", desc: "Verde Agua" },
+            { id: "stl-grn-drk", type: "steel", color: "green", name: "Vert Tarraco", price: "$359", img: "https://i.imgur.com/T9C7BD0.jpeg", desc: "Verde Bosque Metálico" },
+            { id: "stl-blk", type: "steel", color: "black", name: "Noir Infini", price: "$359", img: "https://i.imgur.com/VHYFYQd.jpeg", desc: "Negro Total" },
+            { id: "stl-blu", type: "steel", color: "blue", name: "Bleu Océan", price: "$359", img: "https://i.imgur.com/ZYmOsVO.jpeg", desc: "Azul Eléctrico" },
+            { id: "stl-gld", type: "steel", color: "gold", name: "Or Classique", price: "$359", img: "https://i.imgur.com/K4LPFFt.jpeg", desc: "Dorado Puro" },
+            { id: "stl-midnight", type: "steel", color: "blue", name: "Minuit Métallique", price: "$359", img: "https://i.imgur.com/HSjuxdE.jpeg", desc: "Azul Medianoche" },
+            { id: "stl-rose-gld", type: "steel", color: "pink", name: "Or Rose", price: "$359", img: "https://i.imgur.com/g7AXy9m.jpeg", desc: "Rose Gold" },
+            { id: "stl-pnk", type: "steel", color: "pink", name: "Rose Métal", price: "$359", img: "https://i.imgur.com/5ove4ku.jpeg", desc: "Rosa Suave" },
+            { id: "stl-slv", type: "steel", color: "silver", name: "Argent Pur", price: "$359", img: "https://i.imgur.com/PnYTzC9.jpeg", desc: "Plata Clásica" },
+        ];
+
+        // 4. L'ARMURE CARBONE (Phone Cases)
+        const caseProducts = [
+            { id: "case-monaco", type: "case", color: "grey", name: "Monaco GT", price: "$299", img: "https://i.imgur.com/XwgjP4b.jpeg", desc: "Gris Sport con Franja" },
+            { id: "case-espresso", type: "case", color: "brown", name: "Espresso Duo", price: "$299", img: "https://i.imgur.com/JfOHQ3y.jpeg", desc: "Café Bitono" },
+            { id: "case-carbon", type: "case", color: "black", name: "Phantom Carbon", price: "$299", img: "https://i.imgur.com/REPAm8V.jpeg", desc: "Fibra de Carbono Negra" },
+            { id: "case-alps", type: "case", color: "red", name: "Alps Sunset", price: "$329", img: "https://i.imgur.com/W71NAmc.jpeg", desc: "Diseño Montaña Rojo" },
+            { id: "case-nordic", type: "case", color: "blue", name: "Nordic Peaks", price: "$329", img: "https://i.imgur.com/E20tmfO.jpeg", desc: "Diseño Montaña Azul" },
+            { id: "case-bordeaux", type: "case", color: "black", name: "Bordeaux Accent", price: "$299", img: "https://i.imgur.com/Xk7aJVF.jpeg", desc: "Negro con detalle Vino" },
+            { id: "case-heritage", type: "case", color: "black", name: "Heritage Stripe", price: "$299", img: "https://i.imgur.com/WRlMIPQ.jpeg", desc: "Franja Tricolor" },
+            { id: "case-urban", type: "case", color: "black", name: "Urban Camo", price: "$329", img: "https://i.imgur.com/q8wF3Qa.jpeg", desc: "Franja Monocromática" },
+        ];
+
+        const allProducts = [...diamondProducts, ...leatherProducts, ...steelProducts, ...caseProducts];
 
         const Navbar = () => (
             <nav className="fixed w-full z-50 py-6 px-8 flex justify-between items-center bg-[#050505]/95 backdrop-blur border-b border-white/5">
-                <a href="index.html" className="text-gray-400 text-xs tracking-widest hover:text-white uppercase flex items-center">
-                    &larr; <span className="ml-2">Inicio</span>
-                </a>
-                <a href="index.html">
-                    <img src="https://imgur.com/JZmpC36.png" alt="VANTO" className="h-8 invert brightness-200" />
-                </a>
+                <a href="index.html" className="text-gray-400 text-xs tracking-widest hover:text-white uppercase flex items-center">&larr; <span className="ml-2">Inicio</span></a>
+                <a href="index.html"><img src="https://imgur.com/JZmpC36.png" alt="VANTO" className="h-8 md:h-10 invert brightness-200" /></a>
                 <div className="w-12"></div>
             </nav>
         );
 
-        const ProductCard = ({ item, isDiamond }) => (
-            <a href={`product.html${item.params ? '?' + item.params : ''}`} className="group block mb-12">
-                <div className="relative aspect-[4/5] bg-[#111] overflow-hidden mb-6 border border-white/5 group-hover:border-[#D4AF37]/50 transition-colors">
-                    <img src={item.img} alt={item.name} className="w-full h-full object-cover opacity-90 group-hover:scale-105 group-hover:opacity-100 transition-all duration-700" />
-                    
-                    {/* Badge */}
-                    {isDiamond && (
-                        <div className="absolute top-0 right-0 bg-[#D4AF37] text-black text-[9px] font-bold px-3 py-1 uppercase tracking-widest">
-                            Luxury Mod
+        const ProductCard = ({ item }) => {
+            const url = `producto.html?id=${item.id}&type=${item.type}`;
+            const isRoyal = item.type === 'diamond';
+            return (
+                <a href={url} className={`group block mb-12 fade-in relative ${isRoyal ? 'order-first' : ''}`}>
+                    <div className={`relative aspect-[4/5] bg-[#111] overflow-hidden mb-6 border transition-all duration-500 rounded-sm card-hover ${isRoyal ? 'border-[#D4AF37]/30' : 'border-white/5'}`}>
+                        <img src={item.img} alt={item.name} className="w-full h-full object-cover opacity-90 group-hover:scale-105 group-hover:opacity-100 transition-all duration-700" />
+                        {isRoyal && <div className="absolute top-0 right-0 bg-gradient-to-r from-[#D4AF37] to-[#F1C40F] text-black text-[9px] font-bold px-3 py-1 uppercase tracking-widest shadow-lg">L'Édition Royale</div>}
+                        {item.type === 'steel' && <div className="absolute top-0 right-0 bg-gray-200 text-black text-[9px] font-bold px-3 py-1 uppercase tracking-widest">Acier</div>}
+                        {item.type === 'case' && <div className="absolute top-0 right-0 bg-white/20 backdrop-blur text-white text-[9px] font-bold px-3 py-1 uppercase tracking-widest">L'Armure</div>}
+                        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-black/20 backdrop-blur-[2px]"><span className="liquid-glass text-white px-6 py-2 uppercase text-[10px] tracking-widest rounded-sm">Explorar</span></div>
+                    </div>
+                    <div className="text-center relative">
+                        {isRoyal && <div className="absolute -inset-4 bg-[#D4AF37] opacity-0 group-hover:opacity-5 blur-xl transition-opacity"></div>}
+                        <h3 className={`text-lg serif italic mb-1 transition-colors ${isRoyal ? 'text-[#D4AF37]' : 'text-white group-hover:text-gray-300'}`}>{item.name}</h3>
+                        {item.desc && <p className="text-gray-500 text-[10px] uppercase tracking-widest mb-2">{item.desc}</p>}
+                        <p className="text-white font-medium">{item.price}</p>
+                    </div>
+                </a>
+            );
+        };
+
+        const Catalog = () => {
+            const [filterType, setFilterType] = useState('all');
+            const [searchQuery, setSearchQuery] = useState('');
+            const [activeColor, setActiveColor] = useState('all');
+
+            const filteredProducts = allProducts.filter(product => {
+                const matchesType = filterType === 'all' || product.type === filterType;
+                const matchesSearch = product.name.toLowerCase().includes(searchQuery.toLowerCase()) || product.desc.toLowerCase().includes(searchQuery.toLowerCase());
+                const matchesColor = activeColor === 'all' || product.color === activeColor;
+                return matchesType && matchesSearch && matchesColor;
+            });
+
+            return (
+                <div className="pt-32 pb-24 container mx-auto px-6 min-h-screen relative">
+                    <div className="sticky top-24 z-40 mb-16 liquid-glass rounded-xl p-6 transition-all duration-500">
+                        <div className="flex flex-col md:flex-row justify-between items-center gap-6">
+                            <div className="w-full md:w-1/3 relative">
+                                <input type="text" placeholder="Buscar en el archivo..." className="w-full bg-transparent border-b border-white/20 text-white text-sm py-2 focus:outline-none focus:border-[#D4AF37] transition-colors placeholder-gray-500" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} />
+                                <svg className="absolute right-0 top-2 text-gray-500" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                            </div>
+                            <div className="flex gap-4 text-xs uppercase tracking-widest overflow-x-auto no-scrollbar">
+                                <button onClick={() => setFilterType('all')} className={`pb-1 border-b-2 transition-colors ${filterType === 'all' ? 'border-[#D4AF37] text-white' : 'border-transparent text-gray-500 hover:text-gray-300'}`}>Todo</button>
+                                <button onClick={() => setFilterType('diamond')} className={`pb-1 border-b-2 transition-colors ${filterType === 'diamond' ? 'border-[#D4AF37] text-[#D4AF37]' : 'border-transparent text-gray-500 hover:text-gray-300'}`}>L'Édition Royale</button>
+                                <button onClick={() => setFilterType('case')} className={`pb-1 border-b-2 transition-colors ${filterType === 'case' ? 'border-[#D4AF37] text-white' : 'border-transparent text-gray-500 hover:text-gray-300'}`}>L'Armure Carbone</button>
+                                <button onClick={() => setFilterType('steel')} className={`pb-1 border-b-2 transition-colors ${filterType === 'steel' ? 'border-[#D4AF37] text-white' : 'border-transparent text-gray-500 hover:text-gray-300'}`}>L'Acier</button>
+                                <button onClick={() => setFilterType('leather')} className={`pb-1 border-b-2 transition-colors ${filterType === 'leather' ? 'border-[#D4AF37] text-white' : 'border-transparent text-gray-500 hover:text-gray-300'}`}>Atelier</button>
+                            </div>
+                            <div className="flex gap-2">
+                                {['all', 'black', 'gold', 'silver', 'blue', 'red', 'green', 'pink'].map(c => (
+                                    <button key={c} onClick={() => setActiveColor(c)} className={`w-4 h-4 rounded-full border border-white/20 transition-transform hover:scale-125 ${activeColor === c ? 'scale-125 border-white' : ''}`} style={{background: c === 'all' ? 'transparent' : c, backgroundImage: c === 'all' ? 'conic-gradient(red, orange, yellow, green, blue, indigo, violet)' : 'none'}} title={c} />
+                                ))}
+                            </div>
                         </div>
-                    )}
-                    
-                    {/* Botón flotante 'Ver' */}
-                    <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-black/20">
-                        <span className="bg-white/10 backdrop-blur text-white px-6 py-2 uppercase text-[10px] tracking-widest border border-white/30">Ver Detalles</span>
+                    </div>
+                    <div className="text-center mb-12">
+                        <h1 className="text-4xl md:text-5xl text-white serif italic">{filterType === 'diamond' ? "L'Édition Royale" : filterType === 'case' ? "L'Armure Carbone" : filterType === 'steel' ? "L'Acier Moderne" : filterType === 'leather' ? "Leather Atelier" : "Le Grand Catalogue"}</h1>
+                        <p className="text-gray-500 text-xs tracking-[0.3em] uppercase mt-4">{filteredProducts.length} Piezas Encontradas</p>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-8 gap-y-12">
+                        {filteredProducts.map((p) => <ProductCard key={p.id} item={p} />)}
                     </div>
                 </div>
-                
-                <div className="text-center">
-                    <h3 className="text-lg serif text-white italic mb-1 group-hover:text-[#D4AF37] transition-colors">{item.name}</h3>
-                    {item.desc && <p className="text-gray-500 text-[10px] uppercase tracking-widest mb-2">{item.desc}</p>}
-                    <p className="text-white font-medium">{item.price}</p>
-                </div>
-            </a>
-        );
+            );
+        };
 
-        const Catalog = () => (
-            <div className="pt-32 pb-24 container mx-auto px-6 min-h-screen">
-                <div className="text-center mb-24">
-                    <span className="text-[#D4AF37] text-xs font-bold tracking-[0.3em] uppercase block mb-4">El Archivo 2025</span>
-                    <h1 className="text-4xl md:text-6xl text-white serif">Catálogo Completo</h1>
-                </div>
-
-                {/* DIAMOND SECTION */}
-                <div className="mb-32">
-                    <div className="flex items-center mb-12">
-                        <div className="h-px bg-white/10 flex-grow"></div>
-                        <h2 className="px-8 text-2xl serif text-white italic">Diamond Mod Collection</h2>
-                        <div className="h-px bg-white/10 flex-grow"></div>
-                    </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-8 gap-y-4">
-                        {diamondProducts.map((p, i) => <ProductCard key={i} item={p} isDiamond={true} />)}
-                    </div>
-                </div>
-
-                {/* ESSENTIALS SECTION */}
-                <div>
-                    <div className="flex items-center mb-12">
-                        <div className="h-px bg-white/10 flex-grow"></div>
-                        <h2 className="px-8 text-2xl serif text-white italic">Vanto Essentials</h2>
-                        <div className="h-px bg-white/10 flex-grow"></div>
-                    </div>
-                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-6 gap-y-4">
-                        {essentialProducts.map((p, i) => <ProductCard key={i} item={p} isDiamond={false} />)}
-                    </div>
-                </div>
-                
-            </div>
-        );
-
-        ReactDOM.createRoot(document.getElementById('root')).render(
-            <div>
-                <Navbar />
-                <Catalog />
-            </div>
-        );
+        ReactDOM.createRoot(document.getElementById('root')).render(<div><Navbar /><Catalog /></div>);
     </script>
 </body>
 </html>
