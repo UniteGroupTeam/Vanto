@@ -1,36 +1,234 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Vanto | The Art of Time</title>
     <link rel="icon" type="image/png" href="https://imgur.com/kbF7hve.png">
-    
+
     <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.4.0/model-viewer.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
-    
+    <link
+        href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400&display=swap"
+        rel="stylesheet">
+
     <style>
-        body { background-color: #050505; color: #E5E5E5; font-family: 'Lato', sans-serif; overflow-x: hidden; }
-        .serif { font-family: 'Playfair Display', serif; }
-        .fade-in-up { animation: fadeInUp 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards; opacity: 0; transform: translateY(30px); }
-        @keyframes fadeInUp { to { opacity: 1; transform: translateY(0); } }
-        .no-scrollbar::-webkit-scrollbar { display: none; }
-        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-        .video-overlay { background: linear-gradient(to top, #050505 10%, transparent 50%, rgba(0,0,0,0.6) 100%); }
-        .marquee-container { overflow: hidden; display: flex; position: relative; width: 100%; }
-        .marquee-track { display: flex; animation: scroll 60s linear infinite; width: max-content; }
-        .marquee-track:hover { animation-play-state: paused; }
-        .marquee-reverse .marquee-track { animation-direction: reverse; }
-        @keyframes scroll { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
-        .cart-drawer { transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
-        .cart-open { transform: translateX(0); }
-        .cart-closed { transform: translateX(100%); }
+        /* Global Styles */
+        * {
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            background-color: #050505;
+            color: #E5E5E5;
+            font-family: 'Lato', sans-serif;
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        .serif {
+            font-family: 'Playfair Display', serif;
+        }
+
+        /* Enhanced Animations */
+        .fade-in-up {
+            animation: fadeInUp 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            opacity: 0;
+            transform: translateY(30px);
+        }
+
+        @keyframes fadeInUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Smooth Transitions */
+        a,
+        button {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* Scrollbar Styles */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        /* Custom Scrollbar for Desktop */
+        @media (min-width: 768px) {
+            ::-webkit-scrollbar {
+                width: 8px;
+            }
+
+            ::-webkit-scrollbar-track {
+                background: #0a0a0a;
+            }
+
+            ::-webkit-scrollbar-thumb {
+                background: #333;
+                border-radius: 4px;
+                transition: background 0.3s;
+            }
+
+            ::-webkit-scrollbar-thumb:hover {
+                background: #D4AF37;
+            }
+        }
+
+        /* Video Overlay */
+        .video-overlay {
+            background: linear-gradient(to top, #050505 5%, transparent 40%, rgba(0, 0, 0, 0.7) 100%);
+        }
+
+        /* Marquee Animations */
+        .marquee-container {
+            overflow: hidden;
+            display: flex;
+            position: relative;
+            width: 100%;
+        }
+
+        .marquee-track {
+            display: flex;
+            animation: scroll 60s linear infinite;
+            width: max-content;
+            will-change: transform;
+        }
+
+        .marquee-track:hover {
+            animation-play-state: paused;
+        }
+
+        .marquee-reverse .marquee-track {
+            animation-direction: reverse;
+        }
+
+        @keyframes scroll {
+            0% {
+                transform: translateX(0);
+            }
+
+            100% {
+                transform: translateX(-50%);
+            }
+        }
+
+        /* Cart Drawer */
+        .cart-drawer {
+            transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            box-shadow: -10px 0 40px rgba(0, 0, 0, 0.5);
+        }
+
+        .cart-open {
+            transform: translateX(0);
+        }
+
+        .cart-closed {
+            transform: translateX(100%);
+        }
+
+        /* Enhanced Button Styles */
+        .btn-primary {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-primary::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        .btn-primary:hover::before {
+            width: 300px;
+            height: 300px;
+        }
+
+        /* Mobile Touch Improvements */
+        @media (max-width: 767px) {
+
+            button,
+            a {
+                min-height: 44px;
+                min-width: 44px;
+            }
+
+            .touch-target {
+                padding: 12px 16px;
+            }
+        }
+
+        /* Loading Animation */
+        @keyframes shimmer {
+            0% {
+                background-position: -1000px 0;
+            }
+
+            100% {
+                background-position: 1000px 0;
+            }
+        }
+
+        .skeleton {
+            background: linear-gradient(90deg, #111 25%, #1a1a1a 50%, #111 75%);
+            background-size: 1000px 100%;
+            animation: shimmer 2s infinite;
+        }
+
+        /* Reduce Motion for Accessibility */
+        @media (prefers-reduced-motion: reduce) {
+
+            *,
+            *::before,
+            *::after {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
+        }
+
+        /* Enhanced Hover Effects */
+        .hover-lift {
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s;
+        }
+
+        .hover-lift:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 24px rgba(212, 175, 55, 0.15);
+        }
+
+        /* Glassmorphism Effect */
+        .glass {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
     </style>
 </head>
+
 <body>
     <div id="root"></div>
 
@@ -51,7 +249,7 @@
         const kitImages = ["https://i.imgur.com/gYuiWXL.jpeg", "https://i.imgur.com/HK0ynA8.jpeg", "https://i.imgur.com/NbilMHU.jpeg", "https://i.imgur.com/cyAealH.jpeg"];
         const strapImages = ["https://i.imgur.com/GtKHK1l.jpeg", "https://i.imgur.com/OuDfSjd.jpeg", "https://i.imgur.com/XdOZWKN.jpeg", "https://i.imgur.com/C9pzKAo.jpeg", "https://i.imgur.com/Gt61Uh4.jpeg", "https://i.imgur.com/mzdCuS3.jpeg", "https://i.imgur.com/T9C7BD0.jpeg", "https://i.imgur.com/VHYFYQd.jpeg"];
         const caseImages = ["https://i.imgur.com/ChrgBN5.jpeg", "https://i.imgur.com/VyuONua.jpeg", "https://i.imgur.com/gii0MRk.jpeg", "https://i.imgur.com/zMXi3pI.jpeg", "https://i.imgur.com/rJqx2Bd.jpeg", "https://i.imgur.com/DhyUWRm.jpeg"];
-        
+
         const mixedCollection = [
             { id: 'dk-black-gold', type: 'diamond', name: "Royal Gold Noir", price: "$3,799", img: "https://imgur.com/sSVEjXx.png", tag: "Luxury" },
             { id: 'case-monaco', type: 'case', name: "Monaco GT", price: "$299", img: "https://i.imgur.com/XwgjP4b.jpeg", tag: "New" },
@@ -149,12 +347,23 @@
             }, []);
 
             return (
-                <nav className="fixed w-full z-50 py-6 px-8 flex justify-between items-center bg-[#050505]/95 backdrop-blur border-b border-white/5 top-0 left-0 right-0">
+                <nav className="fixed w-full z-50 py-4 md:py-6 px-4 md:px-8 flex justify-between items-center bg-[#050505]/98 backdrop-blur-xl border-b border-white/5 top-0 left-0 right-0 shadow-lg">
                     <div className="hidden md:block w-32"></div>
-                    <a href="index.html"><img src="https://imgur.com/JZmpC36.png" alt="VANTO" className="h-10 md:h-14 object-contain hover:opacity-90 transition-opacity" /></a>
-                    <div className="flex items-center gap-6 md:gap-8">
-                        <a href="catalogo.html" className="text-white hover:text-[#D4AF37] transition-colors flex items-center gap-2 group"><span className="text-[10px] md:text-xs uppercase tracking-[0.2em] group-hover:underline underline-offset-4">Catálogo</span></a>
-                        <button onClick={onOpenCart} className="relative text-white hover:text-[#D4AF37] transition-colors p-2"><Icons.ShoppingBag size={22} />{cartCount > 0 && <span className="absolute top-0 right-0 bg-[#D4AF37] text-black text-[9px] font-bold w-4 h-4 rounded-full flex items-center justify-center animate-bounce">{cartCount}</span>}</button>
+                    <a href="index.html" className="transform hover:scale-105 transition-transform duration-300">
+                        <img src="https://imgur.com/JZmpC36.png" alt="VANTO" className="h-8 md:h-14 object-contain" />
+                    </a>
+                    <div className="flex items-center gap-4 md:gap-8">
+                        <a href="catalogo.html" className="text-white hover:text-[#D4AF37] transition-all duration-300 flex items-center gap-2 group touch-target">
+                            <span className="text-[10px] md:text-xs uppercase tracking-[0.2em] font-medium group-hover:tracking-[0.25em] transition-all">Catálogo</span>
+                        </a>
+                        <button onClick={onOpenCart} className="relative text-white hover:text-[#D4AF37] transition-all duration-300 p-2 hover:scale-110 touch-target">
+                            <Icons.ShoppingBag size={22} />
+                            {cartCount > 0 && (
+                                <span className="absolute -top-1 -right-1 bg-gradient-to-br from-[#D4AF37] to-[#B8860B] text-black text-[9px] font-bold w-5 h-5 rounded-full flex items-center justify-center shadow-lg animate-pulse">
+                                    {cartCount}
+                                </span>
+                            )}
+                        </button>
                     </div>
                 </nav>
             );
@@ -162,43 +371,225 @@
 
         const Hero = () => (
             <header className="relative w-full h-screen flex items-center justify-center overflow-hidden">
-                <video autoPlay loop muted playsInline className="absolute inset-0 w-full h-full object-cover opacity-60" poster="https://i.imgur.com/q6iOWPe.jpg"><source src="https://i.imgur.com/q6iOWPe.mp4" type="video/mp4" /></video><div className="video-overlay absolute inset-0"></div><div className="relative z-10 text-center px-6"><p className="text-[#D4AF37] tracking-[0.4em] uppercase text-[10px] md:text-xs mb-6 fade-in-up font-bold">Est. 2025 — Mexican Luxury</p><h1 className="text-5xl md:text-8xl serif text-white mb-8 fade-in-up leading-tight" style={{animationDelay: '0.2s'}}>The Vanto <br/><span className="italic font-light text-gray-300">Experience</span></h1><div className="fade-in-up" style={{animationDelay: '0.4s'}}><a href="catalogo.html" className="inline-block border border-white/30 bg-white/5 backdrop-blur-sm px-12 py-4 text-xs uppercase tracking-[0.2em] hover:bg-[#D4AF37] hover:border-[#D4AF37] hover:text-black transition-all duration-500">Ver Todo</a></div></div>
+                <video autoPlay loop muted playsInline className="absolute inset-0 w-full h-full object-cover opacity-50 md:opacity-60" poster="https://i.imgur.com/q6iOWPe.jpg">
+                    <source src="https://i.imgur.com/q6iOWPe.mp4" type="video/mp4" />
+                </video>
+                <div className="video-overlay absolute inset-0"></div>
+                <div className="relative z-10 text-center px-6 max-w-5xl mx-auto">
+                    <p className="text-[#D4AF37] tracking-[0.4em] uppercase text-[9px] md:text-xs mb-6 md:mb-8 fade-in-up font-bold">Est. 2025 — Mexican Luxury</p>
+                    <h1 className="text-4xl md:text-7xl lg:text-8xl serif text-white mb-8 md:mb-12 fade-in-up leading-tight" style={{ animationDelay: '0.2s' }}>
+                        Redefining <br />
+                        <span className="italic font-light text-gray-300">Luxury Tech</span>
+                    </h1>
+                    <div className="fade-in-up" style={{ animationDelay: '0.4s' }}>
+                        <a href="catalogo.html" className="btn-primary inline-block border-2 border-white/30 bg-white/5 backdrop-blur-sm px-8 md:px-12 py-3 md:py-4 text-xs uppercase tracking-[0.2em] hover:bg-[#D4AF37] hover:border-[#D4AF37] hover:text-black transition-all duration-500 hover:shadow-[0_0_30px_rgba(212,175,55,0.4)] touch-target">
+                            Ver Todo
+                        </a>
+                    </div>
+                </div>
             </header>
         );
 
         const MixedCarousel = () => (
-            <section className="py-24 px-6 container mx-auto bg-[#050505]"><div className="flex justify-between items-end mb-12"><div><span className="text-[#D4AF37] text-xs font-bold tracking-[0.3em] uppercase block mb-2">Curaduría Mensual</span><h2 className="text-3xl md:text-4xl serif text-white">Favoritos Vanto</h2></div><div className="hidden md:flex gap-2"><span className="text-xs text-gray-500">&larr; Scroll &rarr;</span></div></div><div className="flex overflow-x-auto gap-8 pb-12 no-scrollbar snap-x">{mixedCollection.map((item, idx) => (<a key={idx} href={`producto.html?id=${item.id}&type=${item.type}`} className="min-w-[280px] md:min-w-[320px] snap-center group block"><div className="relative aspect-[4/5] overflow-hidden bg-[#111] mb-6 border border-white/5 rounded-sm"><img src={item.img} alt={item.name} className="w-full h-full object-cover opacity-90 group-hover:scale-105 group-hover:opacity-100 transition-all duration-700" />{item.tag && <span className="absolute top-0 right-0 bg-[#D4AF37] text-black text-[9px] font-bold px-3 py-1 uppercase tracking-widest z-10">{item.tag}</span>}<div className="absolute inset-0 bg-black/20 group-hover:bg-transparent transition-all"></div></div><h3 className="text-lg serif text-white italic group-hover:text-[#D4AF37] transition-colors">{item.name}</h3><p className="text-gray-500 text-xs font-bold mt-1 tracking-widest">{item.price}</p></a>))}</div></section>
+            <section className="py-16 md:py-24 px-4 md:px-6 container mx-auto bg-[#050505]">
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-8 md:mb-12 gap-4">
+                    <div>
+                        <span className="text-[#D4AF37] text-xs font-bold tracking-[0.3em] uppercase block mb-2">Curaduría Mensual</span>
+                        <h2 className="text-2xl md:text-4xl serif text-white">Favoritos Vanto</h2>
+                    </div>
+                    <div className="hidden md:flex gap-2 items-center">
+                        <span className="text-xs text-gray-500">← Scroll →</span>
+                    </div>
+                </div>
+                <div className="flex overflow-x-auto gap-6 md:gap-8 pb-12 no-scrollbar snap-x snap-mandatory">
+                    {mixedCollection.map((item, idx) => {
+                        // Logic for fake discount: If it's leather (Atelier), show a higher crossed-out price
+                        const isAtelier = item.type === 'leather';
+                        const currentPriceVal = parseInt(item.price.replace(/[^0-9]/g, ''));
+                        const fakeOriginal = isAtelier ? `$${Math.round(currentPriceVal * 1.4).toLocaleString()}` : null;
+
+                        return (
+                            <a key={idx} href={`producto.html?id=${item.id}&type=${item.type}`} className="min-w-[240px] md:min-w-[320px] snap-center group block hover-lift">
+                                <div className="relative aspect-[4/5] overflow-hidden bg-[#111] mb-4 md:mb-6 border border-white/5 rounded-sm">
+                                    <img src={item.img} alt={item.name} className="w-full h-full object-cover opacity-90 group-hover:scale-110 group-hover:opacity-100 transition-all duration-700" />
+                                    {item.tag && <span className="absolute top-0 right-0 bg-gradient-to-br from-[#D4AF37] to-[#B8860B] text-black text-[9px] font-bold px-3 py-1.5 uppercase tracking-widest z-10 shadow-lg">{item.tag}</span>}
+                                    <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                                </div>
+                                <h3 className="text-base md:text-lg serif text-white italic group-hover:text-[#D4AF37] transition-colors mb-1">{item.name}</h3>
+                                <div className="flex items-center gap-3">
+                                    <p className="text-gray-500 text-xs font-bold tracking-widest">{item.price}</p>
+                                    {isAtelier && <p className="text-gray-600 text-[10px] line-through decoration-gray-600">{fakeOriginal}</p>}
+                                </div>
+                            </a>
+                        )
+                    })}
+                </div>
+            </section>
         );
 
         const DualModelSection = () => (
-            <section className="py-32 bg-[#080808] border-y border-white/5"><div className="container mx-auto px-6"><div className="text-center mb-24"><span className="text-[#D4AF37] text-xs font-bold tracking-[0.3em] uppercase mb-4 block">Ingeniería & Diseño</span><h2 className="text-4xl text-white serif">Ecosistema Vanto</h2></div><div className="flex flex-col gap-32"><div className="flex flex-col lg:flex-row items-center gap-12 lg:gap-20"><div className="w-full lg:w-1/2 group"><div className="bg-[#111] rounded-sm overflow-hidden border border-white/5 relative h-[500px] transition-colors hover:border-[#D4AF37]/30"><div className="absolute top-4 left-4 z-10 bg-black/50 backdrop-blur px-3 py-1 text-[10px] text-white uppercase tracking-widest border border-white/10">Apple Watch Ultra 2</div><model-viewer src="https://cdn.jsdelivr.net/gh/UniteGroupTeam/mis-modelos-3d-v2-0@main/apple_watch_ultra_2.glb" alt="3D Apple Watch" auto-rotate camera-controls shadow-intensity="1" exposure="0.8" class="w-full h-full"></model-viewer></div></div><div className="w-full lg:w-1/2 text-left"><h3 className="text-3xl serif text-white mb-6">Precisión de Relojería</h3><div className="h-0.5 w-12 bg-[#D4AF37] mb-8"></div><p className="text-gray-400 font-light leading-relaxed mb-8 text-base">Nuestros kits de modificación son una oda a la precisión. Diseñados milimétricamente para encajar en cajas de 44mm, 45mm y 49mm, transforman tu dispositivo en una pieza de alta relojería suiza.</p></div></div><div className="flex flex-col lg:flex-row-reverse items-center gap-12 lg:gap-20"><div className="w-full lg:w-1/2 group"><div className="bg-[#111] rounded-sm overflow-hidden border border-white/5 relative h-[500px] transition-colors hover:border-[#D4AF37]/30"><div className="absolute top-4 right-4 z-10 bg-black/50 backdrop-blur px-3 py-1 text-[10px] text-white uppercase tracking-widest border border-white/10">iPhone 14 Pro Leather</div><model-viewer src="https://cdn.jsdelivr.net/gh/UniteGroupTeam/mis-modelos-3d-v2-0@main/iphone_14_pro__leather_case.glb" alt="3D iPhone Case" auto-rotate camera-controls shadow-intensity="1" exposure="0.8" class="w-full h-full"></model-viewer></div></div><div className="w-full lg:w-1/2 text-left"><h3 className="text-3xl serif text-white mb-6">Protección Artesanal</h3><div className="h-0.5 w-12 bg-[#D4AF37] mb-8"></div><p className="text-gray-400 font-light leading-relaxed mb-8 text-base">No es solo una funda, es una extensión de tu mano. Fabricada con un polímero de alta densidad recubierto de nuestra piel signature.</p></div></div></div></div></section>
+            <section className="py-20 md:py-32 bg-[#080808] border-y border-white/5">
+                <div className="container mx-auto px-4 md:px-6">
+                    <div className="text-center mb-16 md:mb-24">
+                        <span className="text-[#D4AF37] text-xs font-bold tracking-[0.3em] uppercase mb-4 block">Ingeniería & Diseño</span>
+                        <h2 className="text-3xl md:text-4xl text-white serif">Ecosistema Vanto</h2>
+                    </div>
+                    <div className="flex flex-col gap-20 md:gap-32">
+                        <div className="flex flex-col lg:flex-row items-center gap-8 lg:gap-20">
+                            <div className="w-full lg:w-1/2 group">
+                                <div className="glass rounded-sm overflow-hidden border border-white/5 relative h-[400px] md:h-[500px] transition-all duration-500 hover:border-[#D4AF37]/30 hover:shadow-[0_0_40px_rgba(212,175,55,0.1)]">
+                                    <div className="absolute top-4 left-4 z-10 glass px-3 py-1.5 text-[10px] text-white uppercase tracking-widest border border-white/10 rounded-sm">Apple Watch Ultra 2</div>
+                                    <model-viewer src="https://cdn.jsdelivr.net/gh/UniteGroupTeam/mis-modelos-3d-v2-0@main/apple_watch_ultra_2.glb" alt="3D Apple Watch" auto-rotate camera-controls shadow-intensity="1" exposure="0.8" class="w-full h-full"></model-viewer>
+                                </div>
+                            </div>
+                            <div className="w-full lg:w-1/2 text-left px-4 md:px-0">
+                                <h3 className="text-2xl md:text-3xl serif text-white mb-4 md:mb-6">Precisión de Relojería</h3>
+                                <div className="h-0.5 w-12 bg-[#D4AF37] mb-6 md:mb-8"></div>
+                                <p className="text-gray-400 font-light leading-relaxed text-sm md:text-base">Nuestros kits de modificación son una oda a la precisión. Diseñados milimétricamente para encajar en cajas de 44mm, 45mm y 49mm, transforman tu dispositivo en una pieza de alta relojería suiza.</p>
+                            </div>
+                        </div>
+                        <div className="flex flex-col lg:flex-row-reverse items-center gap-8 lg:gap-20">
+                            <div className="w-full lg:w-1/2 group">
+                                <div className="glass rounded-sm overflow-hidden border border-white/5 relative h-[400px] md:h-[500px] transition-all duration-500 hover:border-[#D4AF37]/30 hover:shadow-[0_0_40px_rgba(212,175,55,0.1)]">
+                                    <div className="absolute top-4 right-4 z-10 glass px-3 py-1.5 text-[10px] text-white uppercase tracking-widest border border-white/10 rounded-sm">iPhone 14 Pro Leather</div>
+                                    <model-viewer src="https://cdn.jsdelivr.net/gh/UniteGroupTeam/mis-modelos-3d-v2-0@main/iphone_14_pro__leather_case.glb" alt="3D iPhone Case" auto-rotate camera-controls shadow-intensity="1" exposure="0.8" class="w-full h-full"></model-viewer>
+                                </div>
+                            </div>
+                            <div className="w-full lg:w-1/2 text-left px-4 md:px-0">
+                                <h3 className="text-2xl md:text-3xl serif text-white mb-4 md:mb-6">Protección Artesanal</h3>
+                                <div className="h-0.5 w-12 bg-[#D4AF37] mb-6 md:mb-8"></div>
+                                <p className="text-gray-400 font-light leading-relaxed text-sm md:text-base">No es solo una funda, es una extensión de tu mano. Fabricada con un polímero de alta densidad recubierto de nuestra piel signature.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        );
+
+        const AboutSection = () => (
+            <section className="py-24 bg-[#050505] relative overflow-hidden">
+                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1px] h-24 bg-gradient-to-b from-transparent via-[#D4AF37]/50 to-transparent"></div>
+                <div className="container mx-auto px-6 max-w-4xl text-center relative z-10">
+                    <span className="text-[#D4AF37] text-[10px] font-bold tracking-[0.4em] uppercase mb-6 block fade-in-up">Nuestra Esencia</span>
+                    <h2 className="text-3xl md:text-5xl serif text-white mb-8 leading-tight italic fade-in-up" style={{ animationDelay: '0.1s' }}>
+                        "Donde la Alta Relojería<br />encuentra la Tecnología."
+                    </h2>
+                    <p className="text-gray-400 text-sm md:text-base leading-relaxed font-light fade-in-up" style={{ animationDelay: '0.2s' }}>
+                        En Vanto, no vendemos accesorios; creamos transformaciones. Fusionamos la ingeniería de precisión de los smartwatches más avanzados con la estética atemporal de la relojería suiza y la marroquinería de lujo.
+                    </p>
+                    <div className="mt-12 flex flex-col md:flex-row justify-center gap-12 md:gap-24 opacity-80">
+                        <div className="text-center">
+                            <span className="block text-2xl serif text-white mb-2">316L</span>
+                            <span className="text-[10px] text-[#D4AF37] uppercase tracking-widest">Acero Quirúrgico</span>
+                        </div>
+                        <div className="text-center">
+                            <span className="block text-2xl serif text-white mb-2">100%</span>
+                            <span className="text-[10px] text-[#D4AF37] uppercase tracking-widest">Piel Genuina</span>
+                        </div>
+                        <div className="text-center">
+                            <span className="block text-2xl serif text-white mb-2">AAA+</span>
+                            <span className="text-[10px] text-[#D4AF37] uppercase tracking-widest">Zirconias</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
         );
 
         const LogisticsAndGallery = () => {
-            const doubleKits = [...kitImages, ...kitImages, ...kitImages];
-            const mixed = [...strapImages, ...caseImages].sort(() => Math.random() - 0.5);
-            const doubleMixed1 = [...mixed, ...mixed];
-            const doubleMixed2 = [...mixed.reverse(), ...mixed];
+            // Updated image arrays to include phone cases significantly
+            const kits = [...kitImages].sort(() => 0.5 - Math.random());
+            const cases = [...caseImages, ...caseImages]; // More phone cases
+            const straps = [...strapImages];
+
+            // Marquee 1: Focus on Kits & Luxury Cases (Large)
+            const row1 = [...kits, ...cases].sort(() => 0.5 - Math.random());
+
+            // Marquee 2 & 3: Mixed Straps and Cases (Square)
+            const row2 = [...straps, ...cases].sort(() => 0.5 - Math.random());
+            const row3 = [...cases, ...straps].sort(() => 0.5 - Math.random());
+
             return (
-                <section className="bg-[#050505] pt-32 pb-12 overflow-hidden border-t border-white/5"><div className="container mx-auto px-6 mb-24"><div className="text-center mb-20"><span className="text-[#D4AF37] text-xs font-bold tracking-[0.3em] uppercase mb-4 block">Confianza & Estilo</span><h2 className="text-4xl text-white serif">Vanto World</h2></div><div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-24 border-b border-white/5 pb-16"><div className="bg-[#080808] p-8 border border-white/5 text-center group hover:border-[#D4AF37]/30 transition-colors"><div className="flex justify-center mb-6 text-[#D4AF37]"><Icons.Plane size={32} /></div><h3 className="text-lg serif text-white mb-3">Envíos Globales</h3><p className="text-gray-500 text-xs leading-loose font-light">DHL, FedEx y UPS. 10-18 días hábiles.</p></div><div className="bg-[#080808] p-8 border border-white/5 text-center group hover:border-[#D4AF37]/30 transition-colors"><div className="flex justify-center mb-6 text-[#D4AF37]"><Icons.Package size={32} /></div><h3 className="text-lg serif text-white mb-3">Embalaje Seguro</h3><p className="text-gray-500 text-xs leading-loose font-light">Protección rígida reforzada.</p></div><div className="bg-[#080808] p-8 border border-white/5 text-center group hover:border-[#D4AF37]/30 transition-colors"><div className="flex justify-center mb-6 text-[#D4AF37]"><Icons.Shield size={32} /></div><h3 className="text-lg serif text-white mb-3">Garantía Vanto</h3><p className="text-gray-500 text-xs leading-loose font-light">Protección total al comprador.</p></div></div></div><div className="space-y-8"><div><p className="text-center text-[#D4AF37] text-[10px] uppercase tracking-[0.4em] mb-4">L'Édition Royale</p><div className="marquee-container opacity-100 hover:opacity-90 transition-opacity duration-500"><div className="marquee-track gap-6">{doubleKits.map((img, i) => <div key={i} className="w-[350px] h-[250px] bg-[#111] border border-[#D4AF37]/20 shrink-0 overflow-hidden rounded-sm"><img src={img} className="w-full h-full object-cover hover:scale-105 transition-transform duration-1000" loading="lazy" /></div>)}</div></div></div><div className="space-y-4"><div className="marquee-container marquee-reverse"><div className="marquee-track gap-4">{doubleMixed1.map((img, i) => <div key={i} className="w-[200px] h-[200px] bg-[#111] border border-white/10 shrink-0 overflow-hidden rounded-sm"><img src={img} className="w-full h-full object-cover transition-all duration-500 hover:scale-110" loading="lazy" /></div>)}</div></div><div className="marquee-container"><div className="marquee-track gap-4">{doubleMixed2.map((img, i) => <div key={i} className="w-[200px] h-[200px] bg-[#111] border border-white/10 shrink-0 overflow-hidden rounded-sm"><img src={img} className="w-full h-full object-cover transition-all duration-500 hover:scale-110" loading="lazy" /></div>)}</div></div></div></div></section>
+                <section className="bg-[#050505] pt-24 md:pt-32 pb-16 overflow-hidden border-t border-white/5">
+                    <div className="container mx-auto px-6 mb-24">
+                        <div className="text-center mb-20 fade-in-up">
+                            <span className="text-[#D4AF37] text-[10px] md:text-xs font-bold tracking-[0.3em] uppercase mb-4 block">Confianza & Estilo</span>
+                            <h2 className="text-3xl md:text-5xl text-white serif italic">Vanto World</h2>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8 mb-24 border-b border-white/5 pb-16">
+                            <div className="bg-[#080808]/50 backdrop-blur-sm p-8 md:p-10 border border-white/5 text-center group hover:border-[#D4AF37]/30 transition-all duration-500 hover:-translate-y-2">
+                                <div className="flex justify-center mb-6 text-[#D4AF37] opacity-80 group-hover:opacity-100 group-hover:scale-110 transition-all duration-500"><Icons.Plane size={36} /></div>
+                                <h3 className="text-xl serif text-white mb-4 italic">Envíos Globales</h3>
+                                <p className="text-gray-500 text-xs leading-loose font-light tracking-wide">Alianzas estratégicas con DHL, FedEx y UPS.<br />Entrega segura en 10-18 días hábiles.</p>
+                            </div>
+                            <div className="bg-[#080808]/50 backdrop-blur-sm p-8 md:p-10 border border-white/5 text-center group hover:border-[#D4AF37]/30 transition-all duration-500 hover:-translate-y-2">
+                                <div className="flex justify-center mb-6 text-[#D4AF37] opacity-80 group-hover:opacity-100 group-hover:scale-110 transition-all duration-500"><Icons.Package size={36} /></div>
+                                <h3 className="text-xl serif text-white mb-4 italic">Unboxing Experience</h3>
+                                <p className="text-gray-500 text-xs leading-loose font-light tracking-wide">Cada pieza llega en nuestro estuche signature.<br />Protección rígida y presentación de lujo.</p>
+                            </div>
+                            <div className="bg-[#080808]/50 backdrop-blur-sm p-8 md:p-10 border border-white/5 text-center group hover:border-[#D4AF37]/30 transition-all duration-500 hover:-translate-y-2">
+                                <div className="flex justify-center mb-6 text-[#D4AF37] opacity-80 group-hover:opacity-100 group-hover:scale-110 transition-all duration-500"><Icons.Shield size={36} /></div>
+                                <h3 className="text-xl serif text-white mb-4 italic">Garantía Vanto</h3>
+                                <p className="text-gray-500 text-xs leading-loose font-light tracking-wide">Compromiso total de satisfacción.<br />Soporte personalizado 24/7.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div className="space-y-8 md:space-y-12">
+                        <div>
+                            <p className="text-center text-[#D4AF37] text-[9px] md:text-[10px] uppercase tracking-[0.4em] mb-6">Lifestyle Gallery</p>
+                            <div className="marquee-container opacity-100 hover:opacity-90 transition-opacity duration-500">
+                                <div className="marquee-track gap-4 md:gap-6">
+                                    {row1.map((img, i) =>
+                                        <div key={i} className="w-[280px] md:w-[350px] h-[200px] md:h-[250px] bg-[#111] border border-[#D4AF37]/20 shrink-0 overflow-hidden rounded-sm group relative">
+                                            <div className="absolute inset-0 bg-[#D4AF37]/10 opacity-0 group-hover:opacity-100 transition-opacity z-10"></div>
+                                            <img src={img} className="w-full h-full object-cover hover:scale-110 transition-transform duration-[2s] ease-out" loading="lazy" />
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+                        <div className="space-y-4 md:space-y-6">
+                            <div className="marquee-container marquee-reverse">
+                                <div className="marquee-track gap-3 md:gap-4">
+                                    {row2.map((img, i) => <div key={i} className="w-[160px] md:w-[200px] h-[160px] md:h-[200px] bg-[#111] border border-white/10 shrink-0 overflow-hidden rounded-sm"><img src={img} className="w-full h-full object-cover transition-all duration-700 hover:scale-110 grayscale hover:grayscale-0" loading="lazy" /></div>)}
+                                </div>
+                            </div>
+                            <div className="marquee-container">
+                                <div className="marquee-track gap-3 md:gap-4">
+                                    {row3.map((img, i) => <div key={i} className="w-[160px] md:w-[200px] h-[160px] md:h-[200px] bg-[#111] border border-white/10 shrink-0 overflow-hidden rounded-sm"><img src={img} className="w-full h-full object-cover transition-all duration-700 hover:scale-110 grayscale hover:grayscale-0" loading="lazy" /></div>)}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
             );
         };
 
         const Footer = () => (
-            <footer className="bg-[#020202] py-20 text-center border-t border-white/5">
-                <img src="https://imgur.com/O4x44qT.png" alt="Vanto" className="h-24 mx-auto mb-8 opacity-80" />
-                <p className="text-gray-700 text-[10px] tracking-widest uppercase">&copy; 2025 Vanto México.</p>
+            <footer className="bg-[#020202] py-16 md:py-20 text-center border-t border-white/5">
+                <div className="container mx-auto px-4 md:px-6">
+                    <img src="https://imgur.com/O4x44qT.png" alt="Vanto" className="h-20 md:h-24 mx-auto mb-6 md:mb-8 opacity-80 hover:opacity-100 transition-opacity" />
+                    <div className="flex flex-col md:flex-row justify-center items-center gap-4 md:gap-8 mb-6 text-gray-600 text-[10px] tracking-widest uppercase">
+                        <a href="index.html" className="hover:text-[#D4AF37] transition-colors">Inicio</a>
+                        <span className="hidden md:inline">•</span>
+                        <a href="catalogo.html" className="hover:text-[#D4AF37] transition-colors">Catálogo</a>
+                        <span className="hidden md:inline">•</span>
+                        <a href="https://wa.me/525574123521" target="_blank" rel="noopener noreferrer" className="hover:text-[#D4AF37] transition-colors">Contacto</a>
+                    </div>
+                    <p className="text-gray-700 text-[10px] tracking-widest uppercase mb-2">&copy; 2025 Vanto México. Todos los derechos reservados.</p>
+                    <p className="text-gray-800 text-[9px] tracking-wider">Diseñado con pasión en México</p>
+                </div>
             </footer>
         );
 
         const App = () => {
             const [isCartOpen, setIsCartOpen] = useState(false);
             return (
-                <div><Navbar onOpenCart={() => setIsCartOpen(true)} /><Hero /><MixedCarousel /><DualModelSection /><LogisticsAndGallery /><Footer /><CartDrawer isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} /></div>
+                <div><Navbar onOpenCart={() => setIsCartOpen(true)} /><Hero /><MixedCarousel /><AboutSection /><DualModelSection /><LogisticsAndGallery /><Footer /><CartDrawer isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} /></div>
             );
         };
 
         ReactDOM.createRoot(document.getElementById('root')).render(<App />);
     </script>
 </body>
+
 </html>
