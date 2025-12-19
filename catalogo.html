@@ -222,18 +222,34 @@
                                     <div key={idx} className="animate-fade-in-up" style={{ animationDelay: `${idx * 100}ms` }}>
                                         <h3 className="text-[10px] font-bold text-[#D4AF37] uppercase tracking-[0.3em] mb-4 pl-1 border-l-2 border-[#D4AF37]">{group.title}</h3>
                                         <div className="grid grid-cols-1 gap-2">
-                                            {group.items.map(cat => (
-                                                <button
-                                                    key={cat.id}
-                                                    onClick={() => setCategory(activeCategory === cat.id ? 'all' : cat.id)}
-                                                    className={`group flex items-center justify-between w-full py-3 px-4 rounded-lg border transition-all duration-300 ${activeCategory === cat.id ? 'bg-[#D4AF37]/10 border-[#D4AF37] text-white' : 'bg-[#111] border-transparent text-gray-400 hover:border-white/20 hover:text-white'}`}
-                                                >
-                                                    <span className="text-xs uppercase tracking-widest">{cat.label}</span>
-                                                    <span className={`w-4 h-4 rounded-full border flex items-center justify-center transition-all ${activeCategory === cat.id ? 'border-[#D4AF37] bg-[#D4AF37] border-0' : 'border-gray-600 group-hover:border-white'}`}>
-                                                        {activeCategory === cat.id && <Icons.Check size={10} className="text-black" />}
-                                                    </span>
-                                                </button>
-                                            ))}
+                                            {group.items.map(cat => {
+                                                const isMexico = cat.id === 'mexico';
+                                                const isActive = activeCategory === cat.id;
+                                                return (
+                                                    <button
+                                                        key={cat.id}
+                                                        onClick={() => setCategory(isActive ? 'all' : cat.id)}
+                                                        className={`group flex items-center justify-between w-full py-3 px-4 rounded-lg border transition-all duration-300 relative overflow-hidden
+                                                            ${isMexico
+                                                                ? (isActive ? 'border-white/50 bg-[#111] shadow-[0_0_15px_rgba(206,17,38,0.4),0_0_30px_rgba(0,104,71,0.3)]' : 'border-white/10 bg-transparent shadow-[0_0_10px_rgba(0,104,71,0.3),0_0_10px_rgba(206,17,38,0.3)] hover:shadow-[0_0_20px_rgba(0,104,71,0.5),0_0_20px_rgba(206,17,38,0.5)]')
+                                                                : (isActive ? 'bg-[#D4AF37]/10 border-[#D4AF37] text-white' : 'bg-[#111] border-transparent text-gray-400 hover:border-white/20 hover:text-white')
+                                                            }
+                                                        `}
+                                                    >
+                                                        {/* Gradient Aura Background for Mexico */}
+                                                        {isMexico && <div className={`absolute inset-0 bg-gradient-to-r from-[#006847]/10 via-transparent to-[#CE1126]/10 opacity-50 z-0 transition-opacity ${isActive ? 'opacity-100' : 'opacity-50 group-hover:opacity-80'}`} />}
+
+                                                        <span className={`text-xs uppercase tracking-widest z-10 ${isMexico ? 'font-bold text-white' : ''} ${isMexico && !isActive ? 'animate-pulse' : ''}`}>{cat.label}</span>
+                                                        <span className={`w-4 h-4 rounded-full border flex items-center justify-center transition-all z-10 
+                                                            ${isActive
+                                                                ? (isMexico ? 'border-white bg-white' : 'border-[#D4AF37] bg-[#D4AF37] border-0')
+                                                                : 'border-gray-600 group-hover:border-white'
+                                                            }`}>
+                                                            {isActive && <Icons.Check size={10} className="text-black" />}
+                                                        </span>
+                                                    </button>
+                                                );
+                                            })}
                                         </div>
                                     </div>
                                 ))}
