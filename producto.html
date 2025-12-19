@@ -167,9 +167,19 @@
             *,
             *::before,
             *::after {
-                animation-duration: 0.01ms !important;
-                animation-iteration-count: 1 !important;
                 transition-duration: 0.01ms !important;
+            }
+        }
+
+        @keyframes fall {
+            0% {
+                transform: translateY(-10vh) rotate(0deg);
+                opacity: 1;
+            }
+
+            100% {
+                transform: translateY(110vh) rotate(360deg);
+                opacity: 0;
             }
         }
     </style>
@@ -190,7 +200,8 @@
             Trash: ({ size = 16 }) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>,
             Plane: ({ size = 24 }) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M22 2L11 13"></path><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>,
             Shield: ({ size = 24 }) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path><path d="M9 12l2 2 4-4"></path></svg>,
-            Package: ({ size = 24 }) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><line x1="16.5" y1="9.4" x2="7.5" y2="4.21"></line><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
+            Package: ({ size = 24 }) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><line x1="16.5" y1="9.4" x2="7.5" y2="4.21"></line><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>,
+            Check: ({ size = 16 }) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
         };
 
         // --- CART DRAWER (FIXED HEIGHT) ---
@@ -339,7 +350,38 @@
             { id: "case-urban", type: "case", color: "black", name: "Urban Camo", price: "$329", img: "https://i.imgur.com/q8wF3Qa.jpeg", desc: "Franja Monocromática" },
         ];
 
-        const allProducts = [...diamondProducts, ...leatherProducts, ...steelProducts, ...caseProducts];
+        const evolutionProducts = [
+            { id: "evo-gold", type: "evolution", color: "gold", name: "Évolution Or Suprême", price: "$1,199", img: "https://i.imgur.com/dproL04.jpeg", desc: "Transformación completa en Oro" },
+            { id: "evo-silver", type: "evolution", color: "silver", name: "Évolution Argent Pur", price: "$1,199", img: "https://i.imgur.com/Svt4GrL.jpeg", desc: "Transformación completa en Plata" },
+            { id: "evo-rose", type: "evolution", color: "pink", name: "Évolution Rose Éternel", price: "$1,199", img: "https://i.imgur.com/NsgJIyr.jpeg", desc: "Transformación completa en Oro Rosa" },
+            { id: "evo-black", type: "evolution", color: "black", name: "Évolution Noir Profond", price: "$1,199", img: "https://i.imgur.com/14RKcd9.jpeg", desc: "Transformación completa en Negro" }
+        ];
+
+        const mexicoProducts = [
+            // Special Editions
+            { id: "mx-flag-clear-gold", type: "mexico", name: "Vanto X México: Insignia Gold", price: "$1,999", img: "https://i.imgur.com/VVzKmUQ.jpeg", desc: "Edición Bandera • Clear Case • Oro", tag: "Flagship" },
+            { id: "mx-flag-clear-slv", type: "mexico", name: "Vanto X México: Insignia Silver", price: "$1,999", img: "https://i.imgur.com/mtAmbIu.jpeg", desc: "Edición Bandera • Clear Case • Plata", tag: "Flagship" },
+            { id: "mx-flag-blk-gold", type: "mexico", name: "Legado Tricolor Gold", price: "$1,999", img: "https://i.imgur.com/eVx69va.jpeg", desc: "Edición Bandera • Black Case • Oro", tag: "Mexico" },
+            { id: "mx-flag-blk-slv", type: "mexico", name: "Legado Tricolor Silver", price: "$1,999", img: "https://i.imgur.com/o3rowKd.jpeg", desc: "Edición Bandera • Black Case • Plata", tag: "Mexico" },
+            { id: "mx-wht-blk-gold", type: "mexico", name: "Glaciar Gold Noir", price: "$1,999", img: "https://i.imgur.com/FEXTaqK.jpeg", desc: "Blanco Puro • Black Case • Oro", tag: "Mexico" },
+            { id: "mx-wht-blk-slv", type: "mexico", name: "Glaciar Silver Noir", price: "$1,999", img: "https://i.imgur.com/0l0CBir.jpeg", desc: "Blanco Puro • Black Case • Plata", tag: "Mexico" },
+            { id: "mx-wht-clear-gold", type: "mexico", name: "Glaciar Gold Clear", price: "$1,999", img: "https://i.imgur.com/VCNp3RX.jpeg", desc: "Blanco Puro • Clear Case • Oro", tag: "Mexico" },
+            { id: "mx-wht-clear-slv", type: "mexico", name: "Glaciar Silver Clear", price: "$1,999", img: "https://i.imgur.com/PQL6JEw.jpeg", desc: "Blanco Puro • Clear Case • Plata", tag: "Mexico" },
+            // Standard Editions
+            { id: "mx-blk-gold", type: "mexico", name: "Obsidian Royal Gold", price: "$1,899", img: "https://i.imgur.com/bCJOQaI.jpeg", desc: "Negro Profundo • Black Case • Oro" },
+            { id: "mx-blk-slv", type: "mexico", name: "Obsidian Royal Silver", price: "$1,899", img: "https://i.imgur.com/4CanOR6.jpeg", desc: "Negro Profundo • Black Case • Plata" },
+            { id: "mx-blk-clear-gold", type: "mexico", name: "Obsidian Clear Gold", price: "$1,899", img: "https://i.imgur.com/v6p6Bhy.jpeg", desc: "Negro Profundo • Clear Case • Oro" },
+            { id: "mx-blk-clear-slv", type: "mexico", name: "Obsidian Clear Silver", price: "$1,899", img: "https://i.imgur.com/YCdAQVC.jpeg", desc: "Negro Profundo • Clear Case • Plata" },
+            { id: "mx-org-blk-gold", type: "mexico", name: "Sunset Gold Noir", price: "$1,899", img: "https://i.imgur.com/uBrF2I3.jpeg", desc: "Naranja • Black Case • Oro" },
+            { id: "mx-org-clear-gold", type: "mexico", name: "Sunset Clear Gold", price: "$1,899", img: "https://i.imgur.com/aLrBsRv.jpeg", desc: "Naranja • Clear Case • Oro" },
+            { id: "mx-red-blk-gold", type: "mexico", name: "Crimson Gold Noir", price: "$1,899", img: "https://i.imgur.com/9ZLZDcv.jpeg", desc: "Rojo Intenso • Black Case • Oro" },
+            { id: "mx-trans-blk-gold", type: "mexico", name: "Crystal Black Gold", price: "$1,899", img: "https://i.imgur.com/HkLRSIT.jpeg", desc: "Cristal • Black Case • Oro" },
+            { id: "mx-trans-blk-slv", type: "mexico", name: "Crystal Black Silver", price: "$1,899", img: "https://i.imgur.com/Nea72qj.jpeg", desc: "Cristal • Black Case • Plata" },
+            { id: "mx-trans-clear-gold", type: "mexico", name: "Crystal Clear Gold", price: "$1,899", img: "https://i.imgur.com/zZDFtKC.jpeg", desc: "Cristal • Clear Case • Oro" },
+            { id: "mx-trans-clear-slv", type: "mexico", name: "Crystal Clear Silver", price: "$1,899", img: "https://i.imgur.com/JSTwivo.jpeg", desc: "Cristal • Clear Case • Plata" },
+        ];
+
+        const allProducts = [...diamondProducts, ...leatherProducts, ...steelProducts, ...caseProducts, ...evolutionProducts, ...mexicoProducts];
 
         const Navbar = ({ onOpenCart }) => (
             <nav className="fixed w-full z-50 py-4 md:py-6 px-4 md:px-8 flex justify-between items-center bg-[#050505]/98 backdrop-blur-xl border-b border-white/5 top-0 left-0 right-0 shadow-lg">
@@ -515,6 +557,448 @@
             );
         };
 
+        const CoolingView = ({ product, openCart }) => {
+            const [model, setModel] = useState(null);
+            const iphoneModels = [
+                'iPhone 12',
+                'iPhone 12 Pro',
+                'iPhone 15',
+                'iPhone 15 Pro',
+                'iPhone 15 Plus',
+                'iPhone 15 Pro Max',
+                'iPhone 14 (6.1")',
+                'iPhone 14 Pro (6.1")',
+                'iPhone 14 Plus (6.7")',
+                'iPhone 14 Pro Max (6.7")',
+                'iPhone 12 Pro Max (6.7")',
+                'iPhone 13 Pro Max (6.7")',
+                'iPhone 13 Pro (6.1")',
+                'iPhone 13 (6.1")',
+                'iPhone 11 Pro Max (6.5")',
+                'iPhone 11 (6.1")',
+                'iPhone 16 Pro',
+                'iPhone 16 Plus',
+                'iPhone 16 Pro Max',
+                'iPhone 16'
+            ];
+
+            // Extra info images for gallery
+            const detailsImages = [
+                "https://i.imgur.com/hj5bTkT.jpeg", "https://i.imgur.com/M3tfK2L.jpeg", "https://i.imgur.com/5F0m5RH.jpeg",
+                "https://i.imgur.com/ph127jF.jpeg", "https://i.imgur.com/7d7X9q3.jpeg", "https://i.imgur.com/YZvIkWM.jpeg"
+            ];
+
+            const [mainImg, setMainImg] = useState(product.img);
+
+            const handleAdd = () => { if (!model) { alert("Selecciona tu modelo de iPhone."); return; } addToCart(product, model, openCart); };
+            const handleBuy = () => { if (!model) { alert("Selecciona tu modelo de iPhone."); return; } window.open(`https://wa.me/525574123521?text=Hola Vanto, quiero la carcasa de refrigeración *${product.name}* para *${model}*.`, '_blank'); };
+
+            return (
+                <div className="flex flex-col lg:flex-row gap-12 md:gap-20 animate-fade-in pb-16">
+                    <div className="w-full lg:w-1/2">
+                        <div className="aspect-square bg-[#111] border border-white/10 rounded-2xl overflow-hidden relative group mb-4">
+                            <img src={mainImg} alt={product.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
+                            <div className="absolute top-4 left-4 flex flex-col gap-2">
+                                <span className="bg-[#00A8E8]/20 backdrop-blur-md text-[#00A8E8] border border-[#00A8E8]/30 px-3 py-1 text-[9px] font-bold uppercase tracking-widest rounded-full">Cooling Tech</span>
+                                <span className="bg-white/10 backdrop-blur-md text-white border border-white/20 px-3 py-1 text-[9px] font-bold uppercase tracking-widest rounded-full">MagSafe</span>
+                            </div>
+                        </div>
+                        <div className="grid grid-cols-4 gap-2">
+                            <div onClick={() => setMainImg(product.img)} className={`cursor-pointer aspect-square rounded-lg border overflow-hidden ${mainImg === product.img ? 'border-[#00A8E8]' : 'border-transparent'}`}><img src={product.img} className="w-full h-full object-cover" /></div>
+                            {detailsImages.slice(0, 3).map((src, i) => (
+                                <div key={i} onClick={() => setMainImg(src)} className={`cursor-pointer aspect-square rounded-lg border overflow-hidden ${mainImg === src ? 'border-[#00A8E8]' : 'border-transparent'}`}><img src={src} className="w-full h-full object-cover" /></div>
+                            ))}
+                        </div>
+                    </div>
+
+                    <div className="w-full lg:w-1/2 flex flex-col justify-center">
+                        <h1 className="text-3xl md:text-5xl font-bold text-white mb-2">{product.name}</h1>
+                        <div className="flex items-center gap-4 mb-6">
+                            <span className="text-2xl text-[#00A8E8] font-bold">{product.price} MXN</span>
+                            <span className="text-sm text-gray-500 line-through">$499 MXN</span>
+                            <span className="bg-[#00A8E8] text-black text-[10px] font-bold px-2 py-0.5 rounded-sm">40% OFF</span>
+                        </div>
+
+                        <p className="text-gray-400 leading-relaxed mb-6 text-sm">
+                            Diseñada con tecnología de disipación térmica activa. Su estructura de rejilla transpirable permite que tu iPhone respire, manteniéndolo fresco durante sesiones de juego intenso o carga rápida. Polímero de tacto suave y agarre perfecto.
+                        </p>
+
+                        <div className="mb-8 p-6 bg-[#111] rounded-xl border border-white/5">
+                            <span className="text-xs uppercase tracking-widest text-gray-400 mb-4 block font-bold">Selecciona tu iPhone</span>
+                            <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                                {iphoneModels.map(m => (
+                                    <button
+                                        key={m}
+                                        onClick={() => setModel(m)}
+                                        className={`py-2 px-1 text-[10px] uppercase rounded-md transition-all border ${model === m ? 'bg-[#00A8E8] text-black border-[#00A8E8] font-bold shadow-[0_0_15px_rgba(0,168,232,0.4)]' : 'bg-black text-gray-400 border-white/10 hover:border-white/30'}`}
+                                    >
+                                        {m.replace('iPhone ', '')}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+
+                        <div className="flex gap-4">
+                            <button onClick={handleAdd} className="flex-1 py-4 rounded-xl border border-white/20 text-white font-bold tracking-widest text-xs uppercase hover:bg-white hover:text-black transition-all">
+                                Agregar
+                            </button>
+                            <button onClick={handleBuy} className="flex-1 py-4 rounded-xl bg-gradient-to-r from-[#00A8E8] to-[#007EA7] text-white font-bold tracking-widest text-xs uppercase hover:shadow-[0_0_25px_rgba(0,168,232,0.3)] transition-all">
+                                Comprar Ahora
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        const SamsungView = ({ product, openCart }) => {
+            const [model, setModel] = useState(null);
+
+            // Extra info images for gallery
+            const detailsImages = [
+                "https://i.imgur.com/Dte44jI.jpeg", "https://i.imgur.com/BAw9OAk.jpeg", "https://i.imgur.com/24EVGpP.jpeg",
+                "https://i.imgur.com/UejdjQm.jpeg", "https://i.imgur.com/agqSWcs.jpeg", "https://i.imgur.com/c4P93nd.jpeg"
+            ];
+
+            const [mainImg, setMainImg] = useState(product.img);
+
+            const handleAdd = () => { if (!model) { alert("Selecciona tu modelo."); return; } addToCart(product, model, openCart); };
+            const handleBuy = () => { if (!model) { alert("Selecciona tu modelo."); return; } window.open(`https://wa.me/525574123521?text=Hola Vanto, quiero el Kit de Modificación Samsung *${product.name}* para *${model}*.`, '_blank'); };
+
+            return (
+                <div className="flex flex-col lg:flex-row gap-12 md:gap-20 animate-fade-in pb-16">
+                    <div className="w-full lg:w-1/2">
+                        <div className="aspect-square bg-[#111] border border-white/10 rounded-2xl overflow-hidden relative group mb-4">
+                            <img src={mainImg} alt={product.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
+                            <div className="absolute top-4 left-4 flex flex-col gap-2">
+                                <span className="bg-[#1428A0]/20 backdrop-blur-md text-[#1428A0] border border-[#1428A0]/30 px-3 py-1 text-[9px] font-bold uppercase tracking-widest rounded-full">Édition Galaxy</span>
+                                <span className="bg-white/10 backdrop-blur-md text-white border border-white/20 px-3 py-1 text-[9px] font-bold uppercase tracking-widest rounded-full">Acier 316L</span>
+                            </div>
+                        </div>
+                        <div className="grid grid-cols-4 gap-2">
+                            <div onClick={() => setMainImg(product.img)} className={`cursor-pointer aspect-square rounded-lg border overflow-hidden ${mainImg === product.img ? 'border-[#1428A0]' : 'border-transparent'}`}><img src={product.img} className="w-full h-full object-cover" /></div>
+                            {detailsImages.slice(0, 3).map((src, i) => (
+                                <div key={i} onClick={() => setMainImg(src)} className={`cursor-pointer aspect-square rounded-lg border overflow-hidden ${mainImg === src ? 'border-[#1428A0]' : 'border-transparent'}`}><img src={src} className="w-full h-full object-cover" /></div>
+                            ))}
+                        </div>
+                    </div>
+
+                    <div className="w-full lg:w-1/2 flex flex-col justify-center">
+                        <span className="text-[#1428A0] text-xs font-bold tracking-[0.3em] uppercase mb-2">Haute Ingénierie</span>
+                        <h1 className="text-3xl md:text-5xl serif italic text-white mb-2">{product.name}</h1>
+                        <div className="flex items-center gap-4 mb-6">
+                            <span className="text-2xl text-[#1428A0] font-bold">{product.price} MXN</span>
+                            <span className="text-sm text-gray-500 line-through">$2,499 MXN</span>
+                        </div>
+
+                        <p className="text-gray-400 leading-relaxed mb-6 text-sm">
+                            Transforma tu Galaxy Watch en una pieza de alta relojería. Fabricado en acero inoxidable 316L de grado quirúrgico, este kit DIY incluye todo lo necesario para una modificación de lujo. Robustez, elegancia y precisión.
+                        </p>
+
+                        <div className="mb-8 p-6 bg-[#111] rounded-xl border border-white/5">
+                            <span className="text-xs uppercase tracking-widest text-gray-400 mb-4 block font-bold">Compatibilidad</span>
+                            <div className="flex flex-wrap gap-2">
+                                <div className="flex flex-col gap-2">
+                                    {['Galaxy Watch 8 40mm', 'Galaxy Watch 8 44mm', 'Galaxy Watch 8 46mm'].map(m => (
+                                        <button
+                                            key={m}
+                                            onClick={() => setModel(m)}
+                                            className={`w-full py-3 px-4 text-xs uppercase rounded-md transition-all border ${model === m ? 'bg-[#1428A0] text-white border-[#1428A0] font-bold shadow-[0_0_15px_rgba(20,40,160,0.4)]' : 'bg-black text-gray-400 border-white/10 hover:border-white/30'}`}
+                                        >
+                                            {m}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="flex gap-4">
+                            <button onClick={handleAdd} className="flex-1 py-4 rounded-xl border border-white/20 text-white font-bold tracking-widest text-xs uppercase hover:bg-white hover:text-black transition-all">
+                                Agregar
+                            </button>
+                            <button onClick={handleBuy} className="flex-1 py-4 rounded-xl bg-gradient-to-r from-[#1428A0] to-[#0b165a] text-white font-bold tracking-widest text-xs uppercase hover:shadow-[0_0_25px_rgba(20,40,160,0.3)] transition-all">
+                                Comprar Ahora
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+
+
+        const InsigniaView = ({ product, openCart }) => {
+            const [sizeOption, setSizeOption] = useState(null);
+            const [showVideo, setShowVideo] = useState(true);
+
+            const unboxingImages = [
+                "https://i.imgur.com/8Y7GVTQ.jpeg",
+                "https://i.imgur.com/EhUsxBg.jpeg",
+                "https://i.imgur.com/JeIZxAh.jpeg"
+            ];
+
+            const [showConfetti, setShowConfetti] = useState(false);
+
+            const triggerConfetti = () => {
+                setShowConfetti(true);
+                setTimeout(() => setShowConfetti(false), 3000);
+            };
+
+            const handleAdd = () => {
+                if (!sizeOption) { alert("Por favor selecciona tu Apple Watch"); return; }
+                addToCart(product, sizeOption, openCart);
+                triggerConfetti();
+            };
+            const handleBuy = () => { if (!sizeOption) { alert("Por favor selecciona tu Apple Watch"); return; } window.open(`https://wa.me/525574123521?text=Hola Vanto, deseo adquirir la *Insignia Mexicana: ${product.name}* para *${sizeOption}*. Precio: ${product.price}`, '_blank'); };
+
+            return (
+                <div className="flex flex-col lg:flex-row gap-8 md:gap-20 animate-fade-in pb-16 relative">
+                    {/* Confetti Overlay */}
+                    {showConfetti && (
+                        <div className="fixed inset-0 z-[100] flex items-center justify-center pointer-events-none">
+                            <div className="absolute inset-0 bg-black/40 backdrop-blur-sm animate-fade-in"></div>
+                            <h2 className="text-6xl md:text-8xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-[#006847] via-white to-[#CE1126] z-10 animate-bounce drop-shadow-[0_0_20px_rgba(255,255,255,0.5)]">¡GRACIAS!</h2>
+                            {/* Simple CSS particles can be simulated or we use emojis for simplicity without external libs */}
+                            <div className="absolute inset-0 overflow-hidden">
+                                {[...Array(50)].map((_, i) => (
+                                    <div key={i} className="absolute text-2xl animate-fall" style={{
+                                        left: `${Math.random() * 100}%`,
+                                        top: `-10%`,
+                                        animationDuration: `${Math.random() * 2 + 1}s`,
+                                        animationDelay: `${Math.random()}s`
+                                    }}>
+                                        {['🟩', '⬜', '🟥'][Math.floor(Math.random() * 3)]}
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+                    {/* Visual Section */}
+                    <div className="w-full lg:w-3/5">
+                        {/* Main Stage */}
+                        <div className="relative aspect-[4/5] bg-[#0A0A0A] border border-[#006847]/30 rounded-sm overflow-hidden group mb-6 shadow-[0_0_50px_rgba(0,104,71,0.1)]">
+                            {/* Mexico Aura Effect - Intensified Green */}
+                            <div className="absolute inset-0 z-0 bg-gradient-to-tr from-[#006847]/40 via-transparent to-[#CE1126]/30 opacity-80 animate-pulse pointer-events-none"></div>
+                            <div className="absolute -inset-2 z-0 bg-gradient-to-r from-[#006847] via-white to-[#CE1126] blur-3xl opacity-30 pointer-events-none"></div>
+
+                            {showVideo ? (
+                                <video src="mexico.mp4" autoPlay loop playsInline controls className="w-full h-full object-cover opacity-90 relative z-10" />
+                            ) : (
+                                <img src={product.img} alt={product.name} className="w-full h-full object-cover relative z-10" />
+                            )}
+
+                            {/* Overlay Controls */}
+                            <div className="absolute bottom-6 left-6 flex gap-4 z-20">
+                                <button onClick={() => setShowVideo(true)} className={`px-4 py-2 text-[10px] uppercase tracking-widest backdrop-blur-md border transition-all ${showVideo ? 'bg-white text-black border-white' : 'bg-black/50 text-white border-white/20'}`}>Video</button>
+                                <button onClick={() => setShowVideo(false)} className={`px-4 py-2 text-[10px] uppercase tracking-widest backdrop-blur-md border transition-all ${!showVideo ? 'bg-white text-black border-white' : 'bg-black/50 text-white border-white/20'}`}>Foto</button>
+                            </div>
+
+                            {/* Badge */}
+                            <div className="absolute top-6 right-6 flex flex-col items-end">
+                                <div className="bg-gradient-to-r from-[#006847] via-white to-[#CE1126] h-1 w-16 mb-2"></div>
+                                <span className="text-white text-[9px] font-bold uppercase tracking-[0.3em] text-shadow">Edición Limitada</span>
+                            </div>
+                        </div>
+
+                        {/* Unboxing Gallery */}
+                        <div className="grid grid-cols-3 gap-3">
+                            {unboxingImages.map((src, i) => (
+                                <div key={i} className="aspect-square bg-[#111] border border-white/10 rounded-sm overflow-hidden hover:border-[#D4AF37] transition-colors cursor-pointer" onClick={() => setShowVideo(false)}>
+                                    <img src={src} className="w-full h-full object-cover opacity-70 hover:opacity-100 transition-opacity" />
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* Info Section */}
+                    <div className="w-full lg:w-2/5 flex flex-col justify-center">
+                        <div className="mb-8">
+                            <div className="flex items-center gap-3 mb-4">
+                                <span className="h-[1px] w-8 bg-[#D4AF37]"></span>
+                                <span className="text-[#D4AF37] text-xs font-bold tracking-[0.3em] uppercase">Vanto X México</span>
+                            </div>
+                            <h1 className="text-4xl md:text-6xl serif text-white italic mb-4 leading-none">{product.name}</h1>
+                            <p className="text-3xl text-white font-light mb-6 flex items-baseline gap-2">
+                                {product.price} <span className="text-xs text-gray-500 font-bold uppercase tracking-wider">MXN</span>
+                            </p>
+                            <p className="text-gray-400 font-light text-sm leading-relaxed border-l-2 border-[#CE1126] pl-6 py-2">
+                                La fusión definitiva entre identidad nacional y lujo tecnológico. Incluye kit profesional de instalación y banda de Fluororubber de alta resistencia térmica.
+                            </p>
+                        </div>
+
+                        <div className="mb-10">
+                            <span className="text-xs uppercase tracking-widest text-[#006847] font-bold mb-4 block">Selecciona Compatibilidad</span>
+                            <div className="grid grid-cols-1 gap-3">
+                                {['Ultra 49mm', '45mm (Series 7/8/9)', '44mm (Series 4/5/6/SE)'].map(opt => (
+                                    <button
+                                        key={opt}
+                                        onClick={() => setSizeOption(opt)}
+                                        className={`w-full py-4 px-6 border text-left text-xs uppercase tracking-widest transition-all flex justify-between items-center group ${sizeOption === opt ? 'bg-[#D4AF37] text-black border-[#D4AF37] font-bold' : 'border-white/10 text-gray-400 hover:border-white'}`}
+                                    >
+                                        <span>Apple Watch {opt}</span>
+                                        {sizeOption === opt && <Icons.Check size={16} />}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+
+                        <div className="flex flex-col gap-4">
+                            <button onClick={handleAdd} className="w-full py-4 border border-white/20 text-white font-bold tracking-[0.2em] text-xs uppercase hover:bg-white hover:text-black transition-all">
+                                Añadir al Carrito
+                            </button>
+                            <button onClick={handleBuy} className="w-full py-4 bg-gradient-to-r from-[#006847]/90 to-[#006847] text-white font-bold tracking-[0.2em] text-xs uppercase hover:shadow-[0_0_30px_rgba(0,104,71,0.4)] transition-all">
+                                Comprar Ahora
+                            </button>
+                        </div>
+
+                        <div className="mt-8 pt-8 border-t border-white/5 text-center">
+                            <p className="text-[9px] text-gray-600 uppercase tracking-widest">Diseñado en México • Envíos a todo el país</p>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        const EvolutionView = ({ product, openCart }) => {
+            const [sizeOption, setSizeOption] = useState(null);
+            const [mediaIndex, setMediaIndex] = useState(0); // 0 = main img, 1 = video
+
+            // Images provided by user for the gallery/filler
+            const fillerImages = [
+                "https://i.imgur.com/Y6XH1RH.jpeg", "https://i.imgur.com/O0HkJDh.jpeg", "https://i.imgur.com/A2L9F2N.jpeg",
+                "https://i.imgur.com/TfmSNky.jpeg", "https://i.imgur.com/tWmRbiz.jpeg", "https://i.imgur.com/AuLB6CX.jpeg",
+                "https://i.imgur.com/vbdkEDX.jpeg", "https://i.imgur.com/eDppzya.jpeg", "https://i.imgur.com/bk3F5bK.jpeg",
+                "https://i.imgur.com/T6iRxFy.jpeg", "https://i.imgur.com/eoKzgJE.jpeg", "https://i.imgur.com/AMkD5R3.jpeg",
+                "https://i.imgur.com/xMOyC1Z.jpeg", "https://i.imgur.com/3CScOGV.jpeg", "https://i.imgur.com/tqdeSWO.jpeg",
+                "https://i.imgur.com/eTYfiJI.jpeg", "https://i.imgur.com/YIcGYnY.jpeg"
+            ];
+
+            // Construct media list: Main Image, Video, then Filler Images
+            const mediaList = [
+                { type: 'image', src: product.img },
+                { type: 'video', src: '1.mp4' },
+                ...fillerImages.slice(0, 4).map(src => ({ type: 'image', src }))
+            ];
+
+            const currentMedia = mediaList[mediaIndex];
+
+            const handleAdd = () => { if (!sizeOption) { alert("Por favor selecciona una opción."); return; } addToCart(product, sizeOption, openCart); };
+            const handleBuy = () => { if (!sizeOption) { alert("Por favor selecciona una opción."); return; } window.open(`https://wa.me/525574123521?text=Hola Vanto, quiero comprar la Edición Limitada *${product.name}* en tamaño *${sizeOption}*. Precio: ${product.price}.`, '_blank'); };
+
+            return (
+                <div className="flex flex-col lg:flex-row gap-8 md:gap-16 animate-fade-in">
+                    <div className="w-full lg:w-3/5">
+                        <div className="aspect-[4/5] bg-[#111] border border-white/5 relative overflow-hidden group rounded-sm mb-4">
+                            {currentMedia.type === 'image' ? (
+                                <img src={currentMedia.src} alt={product.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
+                            ) : (
+                                <video src={currentMedia.src} controls autoPlay loop muted className="w-full h-full object-cover" />
+                            )}
+                            <div className="absolute top-4 left-4 bg-[#D4AF37] text-black text-[9px] font-bold px-3 py-1 uppercase tracking-widest shadow-lg">L'Évolution</div>
+                        </div>
+                        <div className="flex gap-3 overflow-x-auto pb-2 no-scrollbar">
+                            {mediaList.map((item, idx) => (
+                                <div
+                                    key={idx}
+                                    onClick={() => setMediaIndex(idx)}
+                                    className={`relative min-w-[60px] w-[60px] aspect-square rounded-sm overflow-hidden cursor-pointer border transition-colors ${mediaIndex === idx ? 'border-[#D4AF37]' : 'border-white/10 hover:border-white/30'}`}
+                                >
+                                    {item.type === 'image' ? (
+                                        <img src={item.src} className="w-full h-full object-cover" />
+                                    ) : (
+                                        <div className="w-full h-full bg-gray-900 flex items-center justify-center text-white">
+                                            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+                                        </div>
+                                    )}
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+
+                    <div className="w-full lg:w-2/5 flex flex-col justify-center">
+                        <span className="text-[#D4AF37] text-xs font-bold tracking-[0.3em] uppercase mb-2">Ingeniería de Lujo</span>
+                        <h1 className="text-3xl md:text-5xl serif text-white italic mb-2">{product.name}</h1>
+                        <p className="text-2xl text-[#D4AF37] font-light mb-6">{product.price} <span className="text-sm text-gray-500 ml-2">MXN</span></p>
+
+                        <div className="border-l-2 border-[#D4AF37] pl-4 mb-8">
+                            <p className="text-gray-300 font-light text-sm leading-relaxed">
+                                {product.desc}. Forjado en acero inoxidable 316L de grado quirúrgico. Una fusión perfecta entre tu Apple Watch y la alta relojería suiza.
+                            </p>
+                        </div>
+
+                        <div className="mb-8">
+                            <span className="text-xs uppercase tracking-widest text-gray-500 mb-4 block">Selecciona tu Modelo</span>
+                            <div className="flex flex-col gap-3">
+                                {[
+                                    "Opción 1: 40mm (Series 6 5 4 SE)",
+                                    "Opción 2: 46mm (Series 11 10)",
+                                    "Opción 3: 41mm (Series 9 8 7)",
+                                    "Opción 4: 44mm (Series 6 5 4 SE)",
+                                    "Opción 5: 45mm (Series 9 8 7)"
+                                ].map((opt) => (
+                                    <button
+                                        key={opt}
+                                        onClick={() => setSizeOption(opt)}
+                                        className={`w-full py-4 px-4 border text-left text-[10px] md:text-xs uppercase tracking-widest transition-all flex justify-between items-center ${sizeOption === opt ? 'bg-white text-black border-white font-bold' : 'border-white/10 text-gray-400 hover:border-white/30 hover:bg-white/5'}`}
+                                    >
+                                        <span>{opt}</span>
+                                        {sizeOption === opt && <Icons.Check size={14} />}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-4">
+                            <button onClick={handleAdd} className="w-full border border-[#D4AF37] text-[#D4AF37] py-4 font-bold tracking-widest text-xs uppercase hover:bg-[#D4AF37] hover:text-black transition-all">
+                                Añadir a la Bolsa
+                            </button>
+                            <button onClick={handleBuy} className="w-full bg-gradient-to-r from-[#D4AF37] to-[#B8860B] text-black py-4 font-bold tracking-widest text-xs uppercase transition-all hover:shadow-[0_0_20px_rgba(212,175,55,0.4)]">
+                                Comprar Ahora
+                            </button>
+                        </div>
+
+                        <div className="flex items-center justify-between border-t border-white/5 pt-6 mt-8 text-gray-500 text-[9px] uppercase tracking-widest">
+                            <div className="flex flex-col items-center gap-2">
+                                <Icons.Package size={16} />
+                                <span>Envío Express</span>
+                            </div>
+                            <div className="flex flex-col items-center gap-2">
+                                <Icons.Shield size={16} />
+                                <span>Garantía de por vida</span>
+                            </div>
+                            <div className="flex flex-col items-center gap-2">
+                                <Icons.ShoppingBag size={16} />
+                                <span>Pago Verificado</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        const coolingProducts = [
+            { id: "cool-purple", type: "cooling", name: "MagSafe Aero: Deep Purple", price: "$299", img: "https://i.imgur.com/9dBH4Hk.jpeg", desc: "Refrigeración Activa • Púrpura Profundo", tag: "New Tech" },
+            { id: "cool-pink", type: "cooling", name: "MagSafe Aero: Rose Petal", price: "$299", img: "https://i.imgur.com/fypoDxt.jpeg", desc: "Refrigeración Activa • Rosa Metalizado", tag: "New Tech" },
+            { id: "cool-black", type: "cooling", name: "MagSafe Aero: Stealth Black", price: "$299", img: "https://i.imgur.com/N2We4SI.jpeg", desc: "Refrigeración Activa • Negro Mate", tag: "Best Seller" },
+            { id: "cool-green", type: "cooling", name: "MagSafe Aero: Forest Green", price: "$299", img: "https://i.imgur.com/h0R25qD.jpeg", desc: "Refrigeración Activa • Verde Bosque", tag: "New Tech" },
+            { id: "cool-navy", type: "cooling", name: "MagSafe Aero: Navy Blue", price: "$299", img: "https://i.imgur.com/kfB2tDy.jpeg", desc: "Refrigeración Activa • Azul Marino", tag: "Classic" },
+            { id: "cool-grey", type: "cooling", name: "MagSafe Aero: Titanium Grey", price: "$299", img: "https://i.imgur.com/Uy7y3RB.jpeg", desc: "Refrigeración Activa • Gris Titanio", tag: "New Tech" },
+            { id: "cool-orange", type: "cooling", name: "MagSafe Aero: Sunset Orange", price: "$299", img: "https://i.imgur.com/d4EyPEv.jpeg", desc: "Refrigeración Activa • Naranja Atardecer", tag: "Summer" },
+            { id: "cool-light-pink", type: "cooling", name: "MagSafe Aero: Blush Pink", price: "$299", img: "https://i.imgur.com/a3tqGUF.jpeg", desc: "Refrigeración Activa • Rosa Clarísimo", tag: "Soft" },
+            { id: "cool-light-blue", type: "cooling", name: "MagSafe Aero: Sky Blue", price: "$299", img: "https://i.imgur.com/D4VAVaj.jpeg", desc: "Refrigeración Activa • Azul Cielo", tag: "Soft" },
+            { id: "cool-white", type: "cooling", name: "MagSafe Aero: Ghost White", price: "$299", img: "https://i.imgur.com/IJrWEUC.jpeg", desc: "Refrigeración Activa • Blanco Puro", tag: "Minimal" },
+        ];
+
+        const samsungProducts = [
+            { id: "sam-w8-black", type: "samsung", name: "L'Obsidienne Noire", price: "$1,199", img: "https://i.imgur.com/bHdgi55.jpeg", desc: "Kit de Modificación • Acero Inoxidable • Noir", tag: "Atelier" },
+            { id: "sam-w8-silver", type: "samsung", name: "L'Argent Pur", price: "$1,199", img: "https://i.imgur.com/CAIj1Wc.jpeg", desc: "Kit de Modificación • Acero Inoxidable • Argent", tag: "Classique" },
+            { id: "sam-w8-titanium", type: "samsung", name: "Le Titane", price: "$1,199", img: "https://i.imgur.com/5VPz7uM.jpeg", desc: "Kit de Modificación • Acero Inoxidable • Titane", tag: "Premium" },
+            // Full Steel Collection
+            { id: "sam-full-black", type: "samsung", name: "L'Impérial Noir", price: "$1,299", img: "https://i.imgur.com/qkxpay4.jpeg", desc: "Full Acero 316L • Brazalete Eslabones • Noir Absolu", tag: "Élite" },
+            { id: "sam-full-silver", type: "samsung", name: "L'Impérial Argent", price: "$1,299", img: "https://i.imgur.com/Y4xuxV1.jpeg", desc: "Full Acero 316L • Brazalete Eslabones • Argent Sterling", tag: "Élite" },
+            { id: "sam-full-titanium", type: "samsung", name: "L'Impérial Titane", price: "$1,299", img: "https://i.imgur.com/VdtU8ik.jpeg", desc: "Full Acero 316L • Brazalete Eslabones • Titane Brut", tag: "Élite" },
+        ];
+
         const ProductPage = () => {
             const [selectedProduct, setSelectedProduct] = useState(null);
             const [isCartOpen, setIsCartOpen] = useState(false);
@@ -522,7 +1006,7 @@
             useEffect(() => {
                 const urlParams = new URLSearchParams(window.location.search);
                 const id = urlParams.get('id');
-                const all = [...diamondProducts, ...leatherProducts, ...steelProducts, ...caseProducts];
+                const all = [...diamondProducts, ...leatherProducts, ...steelProducts, ...caseProducts, ...evolutionProducts, ...mexicoProducts, ...coolingProducts, ...samsungProducts];
                 const found = all.find(p => p.id === id);
                 setSelectedProduct(found || diamondProducts[0]);
             }, []);
@@ -538,6 +1022,10 @@
                         {selectedProduct.type === 'steel' && <SteelView product={selectedProduct} openCart={() => setIsCartOpen(true)} />}
                         {selectedProduct.type === 'leather' && <LeatherView product={selectedProduct} openCart={() => setIsCartOpen(true)} />}
                         {selectedProduct.type === 'case' && <CaseView product={selectedProduct} openCart={() => setIsCartOpen(true)} />}
+                        {selectedProduct.type === 'evolution' && <EvolutionView product={selectedProduct} openCart={() => setIsCartOpen(true)} />}
+                        {selectedProduct.type === 'mexico' && <InsigniaView product={selectedProduct} openCart={() => setIsCartOpen(true)} />}
+                        {selectedProduct.type === 'cooling' && <CoolingView product={selectedProduct} openCart={() => setIsCartOpen(true)} />}
+                        {selectedProduct.type === 'samsung' && <SamsungView product={selectedProduct} openCart={() => setIsCartOpen(true)} />}
 
                         <RecommendedCarousel currentId={selectedProduct.id} />
                     </div>

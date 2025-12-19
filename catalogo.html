@@ -139,6 +139,23 @@
                 transition-duration: 0.01ms !important;
             }
         }
+
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: rgba(212, 175, 55, 0.3);
+            border-radius: 10px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: rgba(212, 175, 55, 0.8);
+        }
     </style>
 </head>
 
@@ -156,66 +173,120 @@
             Check: ({ size = 16 }) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
         };
 
-        const FilterDrawer = ({ isOpen, onClose, activeCategory, setCategory, activeColor, setColor }) => {
+        const FilterDrawer = ({ isOpen, onClose, activeCategory, setCategory, activeColor, setColor, maxPrice, setMaxPrice }) => {
+
+            // Grouping logic for better UX
+            const groups = [
+                {
+                    title: "Collections Vedettes",
+                    items: [
+                        { id: 'mexico', label: "Vanto X México" },
+                        { id: 'diamond', label: "L'Édition Royale" },
+                        { id: 'samsung', label: "Samsung Series" }
+                    ]
+                },
+                {
+                    title: "Bracelets Apple Watch",
+                    items: [
+                        { id: 'evolution', label: "L'Évolution" },
+                        { id: 'steel', label: "L'Acier" },
+                        { id: 'leather', label: "Atelier Cuir" }
+                    ]
+                },
+                {
+                    title: "Protection iPhone",
+                    items: [
+                        { id: 'case', label: "L'Armure Cases" },
+                        { id: 'cooling', label: "MagSafe Aero" }
+                    ]
+                }
+            ];
+
             return (
                 <>
-                    <div className={`fixed inset-0 bg-black/60 backdrop-blur-sm z-[60] transition-opacity duration-300 ${isOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`} onClick={onClose}></div>
-                    <div className={`fixed top-0 right-0 h-[100dvh] w-full md:w-[400px] bg-[#0A0A0A] border-l border-white/10 z-[70] cart-drawer ${isOpen ? 'cart-open' : 'cart-closed'} flex flex-col`}>
-                        <div className="p-6 border-b border-white/10 flex justify-between items-center">
-                            <h2 className="text-xl serif text-white italic">Filtrar Colección</h2>
-                            <button onClick={onClose} className="text-gray-400 hover:text-white"><Icons.X /></button>
+                    <div className={`fixed inset-0 bg-black/60 backdrop-blur-md z-[60] transition-opacity duration-500 ${isOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`} onClick={onClose}></div>
+                    <div className={`fixed top-0 right-0 h-[100dvh] w-full md:w-[420px] bg-[#0A0A0A] border-l border-white/10 z-[70] transform transition-transform duration-500 ease-out flex flex-col shadow-2xl ${isOpen ? 'translate-x-0' : 'translate-x-full'}`}>
+                        <div className="p-8 border-b border-white/10 flex justify-between items-center bg-[#050505]">
+                            <div>
+                                <h2 className="text-2xl serif text-white italic mb-1">Filtrer</h2>
+                                <p className="text-[10px] text-gray-500 uppercase tracking-widest">Affinez Votre Recherche</p>
+                            </div>
+                            <button onClick={onClose} className="text-gray-400 hover:text-[#D4AF37] transition-colors"><Icons.X size={28} /></button>
                         </div>
 
-                        <div className="flex-1 overflow-y-auto p-8 space-y-10">
-                            {/* Categories */}
-                            <div>
-                                <h3 className="text-xs font-bold text-[#D4AF37] uppercase tracking-[0.2em] mb-6">Categoría</h3>
-                                <div className="flex flex-col gap-3">
-                                    {[
-                                        { id: 'all', label: 'Ver Todo' },
-                                        { id: 'diamond', label: "L'Édition Royale" },
-                                        { id: 'leather', label: 'Leather Atelier' },
-                                        { id: 'case', label: "L'Armure Cases" },
-                                        { id: 'steel', label: "L'Acier Métal" }
-                                    ].map(cat => (
-                                        <button
-                                            key={cat.id}
-                                            onClick={() => setCategory(cat.id)}
-                                            className={`flex items-center justify-between w-full py-4 px-4 border text-xs uppercase tracking-widest transition-all ${activeCategory === cat.id ? 'border-[#D4AF37] bg-[#D4AF37]/10 text-white' : 'border-white/10 text-gray-400 hover:border-white/30'}`}
-                                        >
-                                            <span>{cat.label}</span>
-                                            {activeCategory === cat.id && <span className="text-[#D4AF37]"><Icons.Check /></span>}
-                                        </button>
-                                    ))}
-                                </div>
+                        <div className="flex-1 overflow-y-auto p-8 space-y-12 custom-scrollbar">
+
+                            {/* Categories Groups */}
+                            <div className="space-y-10">
+                                {groups.map((group, idx) => (
+                                    <div key={idx} className="animate-fade-in-up" style={{ animationDelay: `${idx * 100}ms` }}>
+                                        <h3 className="text-[10px] font-bold text-[#D4AF37] uppercase tracking-[0.3em] mb-4 pl-1 border-l-2 border-[#D4AF37]">{group.title}</h3>
+                                        <div className="grid grid-cols-1 gap-2">
+                                            {group.items.map(cat => (
+                                                <button
+                                                    key={cat.id}
+                                                    onClick={() => setCategory(activeCategory === cat.id ? 'all' : cat.id)}
+                                                    className={`group flex items-center justify-between w-full py-3 px-4 rounded-lg border transition-all duration-300 ${activeCategory === cat.id ? 'bg-[#D4AF37]/10 border-[#D4AF37] text-white' : 'bg-[#111] border-transparent text-gray-400 hover:border-white/20 hover:text-white'}`}
+                                                >
+                                                    <span className="text-xs uppercase tracking-widest">{cat.label}</span>
+                                                    <span className={`w-4 h-4 rounded-full border flex items-center justify-center transition-all ${activeCategory === cat.id ? 'border-[#D4AF37] bg-[#D4AF37] border-0' : 'border-gray-600 group-hover:border-white'}`}>
+                                                        {activeCategory === cat.id && <Icons.Check size={10} className="text-black" />}
+                                                    </span>
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+                                ))}
                             </div>
 
                             {/* Colors */}
-                            <div>
-                                <h3 className="text-xs font-bold text-[#D4AF37] uppercase tracking-[0.2em] mb-6">Colores</h3>
-                                <div className="grid grid-cols-4 gap-4">
-                                    {['all', 'black', 'gold', 'silver', 'blue', 'red', 'green', 'pink', 'brown', 'white'].map(c => (
+                            <div className="animate-fade-in-up" style={{ animationDelay: '300ms' }}>
+                                <h3 className="text-[10px] font-bold text-[#D4AF37] uppercase tracking-[0.3em] mb-4 pl-1 border-l-2 border-[#D4AF37]">Couleurs</h3>
+                                <div className="flex flex-wrap gap-3">
+                                    {['black', 'gold', 'silver', 'blue', 'red', 'green', 'pink', 'white', 'purple', 'orange', 'grey'].map(c => (
                                         <button
                                             key={c}
-                                            onClick={() => setColor(c)}
-                                            className={`aspect-square rounded-full border-2 transition-all flex items-center justify-center relative touch-target ${activeColor === c ? 'border-white scale-110 shadow-lg' : 'border-transparent hover:scale-105'}`}
+                                            onClick={() => setColor(activeColor === c ? 'all' : c)}
+                                            className={`w-10 h-10 rounded-full border transition-all duration-300 hover:scale-110 flex items-center justify-center relative shadow-lg ${activeColor === c ? 'border-white scale-110 ring-2 ring-[#D4AF37]/50' : 'border-white/10 hover:border-white'}`}
                                             title={c}
                                             style={{
-                                                background: c === 'all' ? 'linear-gradient(135deg, #333 0%, #111 100%)' : c,
-                                                boxShadow: activeColor === c ? `0 0 15px ${c === 'all' ? 'white' : c}` : 'none'
+                                                background: c
                                             }}
                                         >
-                                            {c === 'all' && <span className="text-[8px] text-white">ALL</span>}
-                                            {activeColor === c && c !== 'all' && <Icons.Check size={12} className={['white', 'yellow', 'pink'].includes(c) ? 'text-black' : 'text-white'} />}
+                                            {activeColor === c && <Icons.Check size={14} className={['white', 'yellow', 'pink', 'silver'].includes(c) ? 'text-black' : 'text-white'} />}
                                         </button>
                                     ))}
                                 </div>
                             </div>
+
+                            {/* Price Filter */}
+                            <div className="animate-fade-in-up" style={{ animationDelay: '400ms' }}>
+                                <h3 className="text-[10px] font-bold text-[#D4AF37] uppercase tracking-[0.3em] mb-6 pl-1 border-l-2 border-[#D4AF37]">Budget</h3>
+                                <div className="bg-[#111] p-6 rounded-xl border border-white/5">
+                                    <div className="flex justify-between text-xs text-gray-400 mb-6 font-mono">
+                                        <span>$0</span>
+                                        <span className="text-[#D4AF37] font-bold text-base">${maxPrice.toLocaleString()}</span>
+                                    </div>
+                                    <input
+                                        type="range"
+                                        min="0"
+                                        max="10000"
+                                        step="100"
+                                        value={maxPrice}
+                                        onChange={(e) => setMaxPrice(Number(e.target.value))}
+                                        className="w-full h-1 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-[#D4AF37]"
+                                    />
+                                </div>
+                            </div>
+
                         </div>
 
-                        <div className="p-6 border-t border-white/10 bg-[#050505] mb-safe">
-                            <button onClick={onClose} className="w-full bg-[#D4AF37] hover:bg-white text-black py-4 text-xs font-bold uppercase tracking-[0.2em] transition-colors">
-                                Ver Resultados
+                        <div className="p-6 border-t border-white/10 bg-[#050505]">
+                            <button onClick={onClose} className="w-full bg-gradient-to-r from-[#D4AF37] to-[#B8860B] hover:shadow-[0_0_20px_rgba(212,175,55,0.4)] text-black py-4 text-xs font-bold uppercase tracking-[0.3em] transition-all transform hover:-translate-y-1 rounded-sm">
+                                Voir Résultats
+                            </button>
+                            <button onClick={() => { setCategory('all'); setColor('all'); setMaxPrice(10000); }} className="w-full mt-4 text-gray-500 hover:text-white text-[10px] uppercase tracking-widest transition-colors">
+                                Nettoyer les filtres
                             </button>
                         </div>
                     </div>
@@ -338,7 +409,62 @@
             { id: "case-heritage", type: "case", color: "black", name: "Heritage Stripe", price: "$299", img: "https://i.imgur.com/WRlMIPQ.jpeg", desc: "Franja Tricolor" },
             { id: "case-urban", type: "case", color: "black", name: "Urban Camo", price: "$329", img: "https://i.imgur.com/q8wF3Qa.jpeg", desc: "Franja Monocromática" },
         ];
-        const allProducts = [...diamondProducts, ...leatherProducts, ...steelProducts, ...caseProducts];
+        const evolutionProducts = [
+            { id: "evo-gold", type: "evolution", color: "gold", name: "Évolution Or Suprême", price: "$1,199", img: "https://i.imgur.com/dproL04.jpeg", desc: "Transformación completa en Oro" },
+            { id: "evo-silver", type: "evolution", color: "silver", name: "Évolution Argent Pur", price: "$1,199", img: "https://i.imgur.com/Svt4GrL.jpeg", desc: "Transformación completa en Plata" },
+            { id: "evo-rose", type: "evolution", color: "pink", name: "Évolution Rose Éternel", price: "$1,199", img: "https://i.imgur.com/NsgJIyr.jpeg", desc: "Transformación completa en Oro Rosa" },
+            { id: "evo-black", type: "evolution", color: "black", name: "Évolution Noir Profond", price: "$1,199", img: "https://i.imgur.com/14RKcd9.jpeg", desc: "Transformación completa en Negro" }
+        ];
+
+        const mexicoProducts = [
+            // Special Editions
+            { id: "mx-flag-clear-gold", type: "mexico", name: "Vanto X México: Insignia Gold", price: "$1,999", img: "https://i.imgur.com/VVzKmUQ.jpeg", desc: "Edición Bandera • Clear Case • Oro", tag: "Flagship" },
+            { id: "mx-flag-clear-slv", type: "mexico", name: "Vanto X México: Insignia Silver", price: "$1,999", img: "https://i.imgur.com/mtAmbIu.jpeg", desc: "Edición Bandera • Clear Case • Plata", tag: "Flagship" },
+            { id: "mx-flag-blk-gold", type: "mexico", name: "Legado Tricolor Gold", price: "$1,999", img: "https://i.imgur.com/eVx69va.jpeg", desc: "Edición Bandera • Black Case • Oro", tag: "Mexico" },
+            { id: "mx-flag-blk-slv", type: "mexico", name: "Legado Tricolor Silver", price: "$1,999", img: "https://i.imgur.com/o3rowKd.jpeg", desc: "Edición Bandera • Black Case • Plata", tag: "Mexico" },
+            { id: "mx-wht-blk-gold", type: "mexico", name: "Glaciar Gold Noir", price: "$1,999", img: "https://i.imgur.com/FEXTaqK.jpeg", desc: "Blanco Puro • Black Case • Oro", tag: "Mexico" },
+            { id: "mx-wht-blk-slv", type: "mexico", name: "Glaciar Silver Noir", price: "$1,999", img: "https://i.imgur.com/0l0CBir.jpeg", desc: "Blanco Puro • Black Case • Plata", tag: "Mexico" },
+            { id: "mx-wht-clear-gold", type: "mexico", name: "Glaciar Gold Clear", price: "$1,999", img: "https://i.imgur.com/VCNp3RX.jpeg", desc: "Blanco Puro • Clear Case • Oro", tag: "Mexico" },
+            { id: "mx-wht-clear-slv", type: "mexico", name: "Glaciar Silver Clear", price: "$1,999", img: "https://i.imgur.com/PQL6JEw.jpeg", desc: "Blanco Puro • Clear Case • Plata", tag: "Mexico" },
+            // Standard Editions
+            { id: "mx-blk-gold", type: "mexico", name: "Obsidian Royal Gold", price: "$1,899", img: "https://i.imgur.com/bCJOQaI.jpeg", desc: "Negro Profundo • Black Case • Oro" },
+            { id: "mx-blk-slv", type: "mexico", name: "Obsidian Royal Silver", price: "$1,899", img: "https://i.imgur.com/4CanOR6.jpeg", desc: "Negro Profundo • Black Case • Plata" },
+            { id: "mx-blk-clear-gold", type: "mexico", name: "Obsidian Clear Gold", price: "$1,899", img: "https://i.imgur.com/v6p6Bhy.jpeg", desc: "Negro Profundo • Clear Case • Oro" },
+            { id: "mx-blk-clear-slv", type: "mexico", name: "Obsidian Clear Silver", price: "$1,899", img: "https://i.imgur.com/YCdAQVC.jpeg", desc: "Negro Profundo • Clear Case • Plata" },
+            { id: "mx-org-blk-gold", type: "mexico", name: "Sunset Gold Noir", price: "$1,899", img: "https://i.imgur.com/uBrF2I3.jpeg", desc: "Naranja • Black Case • Oro" },
+            { id: "mx-org-clear-gold", type: "mexico", name: "Sunset Clear Gold", price: "$1,899", img: "https://i.imgur.com/aLrBsRv.jpeg", desc: "Naranja • Clear Case • Oro" },
+            { id: "mx-red-blk-gold", type: "mexico", name: "Crimson Gold Noir", price: "$1,899", img: "https://i.imgur.com/9ZLZDcv.jpeg", desc: "Rojo Intenso • Black Case • Oro" },
+            { id: "mx-trans-blk-gold", type: "mexico", name: "Crystal Black Gold", price: "$1,899", img: "https://i.imgur.com/HkLRSIT.jpeg", desc: "Cristal • Black Case • Oro" },
+            { id: "mx-trans-blk-slv", type: "mexico", name: "Crystal Black Silver", price: "$1,899", img: "https://i.imgur.com/Nea72qj.jpeg", desc: "Cristal • Black Case • Plata" },
+            { id: "mx-trans-clear-gold", type: "mexico", name: "Crystal Clear Gold", price: "$1,899", img: "https://i.imgur.com/zZDFtKC.jpeg", desc: "Cristal • Clear Case • Oro" },
+            { id: "mx-trans-clear-slv", type: "mexico", name: "Crystal Clear Silver", price: "$1,899", img: "https://i.imgur.com/JSTwivo.jpeg", desc: "Cristal • Clear Case • Plata" },
+        ];
+
+        const coolingProducts = [
+            { id: "cool-purple", type: "cooling", name: "MagSafe Aero: Deep Purple", price: "$299", img: "https://i.imgur.com/9dBH4Hk.jpeg", desc: "Refrigeración Activa • Púrpura Profundo", tag: "New Tech" },
+            { id: "cool-pink", type: "cooling", name: "MagSafe Aero: Rose Petal", price: "$299", img: "https://i.imgur.com/fypoDxt.jpeg", desc: "Refrigeración Activa • Rosa Metalizado", tag: "New Tech" },
+            { id: "cool-black", type: "cooling", name: "MagSafe Aero: Stealth Black", price: "$299", img: "https://i.imgur.com/N2We4SI.jpeg", desc: "Refrigeración Activa • Negro Mate", tag: "Best Seller" },
+            { id: "cool-green", type: "cooling", name: "MagSafe Aero: Forest Green", price: "$299", img: "https://i.imgur.com/h0R25qD.jpeg", desc: "Refrigeración Activa • Verde Bosque", tag: "New Tech" },
+            { id: "cool-navy", type: "cooling", name: "MagSafe Aero: Navy Blue", price: "$299", img: "https://i.imgur.com/kfB2tDy.jpeg", desc: "Refrigeración Activa • Azul Marino", tag: "Classic" },
+            { id: "cool-grey", type: "cooling", name: "MagSafe Aero: Titanium Grey", price: "$299", img: "https://i.imgur.com/Uy7y3RB.jpeg", desc: "Refrigeración Activa • Gris Titanio", tag: "New Tech" },
+            { id: "cool-orange", type: "cooling", name: "MagSafe Aero: Sunset Orange", price: "$299", img: "https://i.imgur.com/d4EyPEv.jpeg", desc: "Refrigeración Activa • Naranja Atardecer", tag: "Summer" },
+            { id: "cool-light-pink", type: "cooling", name: "MagSafe Aero: Blush Pink", price: "$299", img: "https://i.imgur.com/a3tqGUF.jpeg", desc: "Refrigeración Activa • Rosa Clarísimo", tag: "Soft" },
+            { id: "cool-light-blue", type: "cooling", name: "MagSafe Aero: Sky Blue", price: "$299", img: "https://i.imgur.com/D4VAVaj.jpeg", desc: "Refrigeración Activa • Azul Cielo", tag: "Soft" },
+            { id: "cool-white", type: "cooling", name: "MagSafe Aero: Ghost White", price: "$299", img: "https://i.imgur.com/IJrWEUC.jpeg", desc: "Refrigeración Activa • Blanco Puro", tag: "Minimal" },
+        ];
+
+        const samsungProducts = [
+            { id: "sam-w8-black", type: "samsung", name: "L'Obsidienne Noire", price: "$1,199", img: "https://i.imgur.com/bHdgi55.jpeg", desc: "Kit de Modificación • Acero Inoxidable • Noir", tag: "Atelier" },
+            { id: "sam-w8-silver", type: "samsung", name: "L'Argent Pur", price: "$1,199", img: "https://i.imgur.com/CAIj1Wc.jpeg", desc: "Kit de Modificación • Acero Inoxidable • Argent", tag: "Classique" },
+            { id: "sam-w8-titanium", type: "samsung", name: "Le Titane", price: "$1,199", img: "https://i.imgur.com/5VPz7uM.jpeg", desc: "Kit de Modificación • Acero Inoxidable • Titane", tag: "Premium" },
+            // Full Steel Collection
+            { id: "sam-full-black", type: "samsung", name: "L'Impérial Noir", price: "$1,299", img: "https://i.imgur.com/qkxpay4.jpeg", desc: "Full Acero 316L • Brazalete Eslabones • Noir Absolu", tag: "Élite" },
+            { id: "sam-full-silver", type: "samsung", name: "L'Impérial Argent", price: "$1,299", img: "https://i.imgur.com/Y4xuxV1.jpeg", desc: "Full Acero 316L • Brazalete Eslabones • Argent Sterling", tag: "Élite" },
+            { id: "sam-full-titanium", type: "samsung", name: "L'Impérial Titane", price: "$1,299", img: "https://i.imgur.com/VdtU8ik.jpeg", desc: "Full Acero 316L • Brazalete Eslabones • Titane Brut", tag: "Élite" },
+        ];
+
+        // Mexico collection moved to top of the list for priority visibility
+        const allProducts = [...mexicoProducts, ...coolingProducts, ...samsungProducts, ...diamondProducts, ...leatherProducts, ...steelProducts, ...caseProducts, ...evolutionProducts];
         const Navbar = ({ onOpenCart }) => {
             const [cartCount, setCartCount] = useState(0);
             useEffect(() => {
@@ -407,19 +533,62 @@
             const [searchQuery, setSearchQuery] = useState('');
             const [isCartOpen, setIsCartOpen] = useState(false);
             const [isFilterOpen, setIsFilterOpen] = useState(false);
+            const [maxPrice, setMaxPrice] = useState(10000);
 
-            const filteredProducts = allProducts.filter(product => {
-                const matchesFilter = activeFilter === 'all' || product.type === activeFilter;
-                const matchesSearch = product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                    (product.desc && product.desc.toLowerCase().includes(searchQuery.toLowerCase()));
-                const matchesColor = activeColor === 'all' || (product.color && product.color === activeColor); // Assuming products have a color property, or matching broadly
+            // Handle URL params
+            useEffect(() => {
+                const params = new URLSearchParams(window.location.search);
+                const filterParam = params.get('filter');
+                if (filterParam) {
+                    setActiveFilter(filterParam);
+                }
+            }, []);
 
-                // Broad color matching if product.color isn't strict (fallback logic can be added here)
-                return matchesFilter && matchesSearch && matchesColor;
-            });
+            // Filtering Logic
+            const filteredProducts = React.useMemo(() => {
+                let results = allProducts;
+
+                // Category Filter
+                if (activeFilter !== 'all') {
+                    results = results.filter(p => p.type === activeFilter);
+                }
+
+                // Search Filter
+                if (searchQuery) {
+                    const q = searchQuery.toLowerCase();
+                    results = results.filter(p => p.name.toLowerCase().includes(q) || (p.desc && p.desc.toLowerCase().includes(q)));
+                }
+
+                // Color Filter
+                if (activeColor !== 'all') {
+                    results = results.filter(p =>
+                        (p.color && p.color === activeColor) ||
+                        p.name.toLowerCase().includes(activeColor) ||
+                        p.desc.toLowerCase().includes(activeColor) ||
+                        (activeColor === 'gold' && (p.name.toLowerCase().includes('oro') || p.name.toLowerCase().includes('gold'))) ||
+                        (activeColor === 'silver' && (p.name.toLowerCase().includes('plata') || p.name.toLowerCase().includes('silver'))) ||
+                        (activeColor === 'black' && (p.name.toLowerCase().includes('negro') || p.name.toLowerCase().includes('noir') || p.name.toLowerCase().includes('black'))) ||
+                        (activeColor === 'white' && (p.name.toLowerCase().includes('blanco') || p.name.toLowerCase().includes('white'))) ||
+                        (activeColor === 'red' && (p.name.toLowerCase().includes('rojo') || p.name.toLowerCase().includes('crimson'))) ||
+                        (activeColor === 'green' && (p.name.toLowerCase().includes('verde') || p.name.toLowerCase().includes('forest'))) ||
+                        (activeColor === 'blue' && (p.name.toLowerCase().includes('azul') || p.name.toLowerCase().includes('navy'))) ||
+                        (activeColor === 'purple' && (p.name.toLowerCase().includes('púrpura') || p.name.toLowerCase().includes('purple'))) ||
+                        (activeColor === 'orange' && (p.name.toLowerCase().includes('naranja') || p.name.toLowerCase().includes('sunset') || p.name.toLowerCase().includes('orange'))) ||
+                        (activeColor === 'grey' && (p.name.toLowerCase().includes('gris') || p.name.toLowerCase().includes('grey') || p.name.toLowerCase().includes('titanium')))
+                    );
+                }
+
+                // Price Filter
+                results = results.filter(p => {
+                    const price = parseFloat(p.price.replace(/[^0-9.]/g, ''));
+                    return price <= maxPrice;
+                });
+
+                return results;
+            }, [allProducts, activeFilter, activeColor, searchQuery, maxPrice]);
 
             return (
-                <div className="pt-24 md:pt-32 pb-16 md:pb-24 container mx-auto px-4 md:px-6 min-h-screen relative">
+                <div className="pt-24 md:pt-32 pb-16 md:pb-24 container mx-auto px-4 md:px-6 relative">
                     {/* Fixed, Stable Search Hader */}
                     <div className="sticky top-16 md:top-24 z-40 mb-8 md:mb-12">
                         <div className="liquid-glass rounded-xl p-3 md:p-6 backdrop-blur-xl bg-[#050505]/90 border-b border-white/10 shadow-2xl flex gap-3 md:gap-4 items-center">
@@ -447,7 +616,7 @@
 
                     <div className="text-center mb-6 md:mb-10">
                         <h1 className="text-2xl md:text-5xl text-white serif italic mb-2">
-                            {activeFilter === 'diamond' ? "L'Édition Royale" : activeFilter === 'case' ? "L'Armure" : activeFilter === 'steel' ? "L'Acier" : activeFilter === 'leather' ? "Atelier" : "Le Catalogue"}
+                            {activeFilter === 'diamond' ? "L'Édition Royale" : activeFilter === 'case' ? "L'Armure" : activeFilter === 'steel' ? "L'Acier" : activeFilter === 'leather' ? "Atelier" : activeFilter === 'evolution' ? "L'Évolution" : activeFilter === 'mexico' ? "Vanto X México" : activeFilter === 'cooling' ? "MagSafe Aero" : activeFilter === 'samsung' ? "Samsung Series" : "Le Catalogue"}
                         </h1>
                         <p className="text-gray-500 text-[10px] tracking-[0.3em] uppercase">
                             {filteredProducts.length} Piezas
@@ -473,6 +642,8 @@
                         setCategory={setActiveFilter}
                         activeColor={activeColor}
                         setColor={setActiveColor}
+                        maxPrice={maxPrice}
+                        setMaxPrice={setMaxPrice}
                     />
                     <CartDrawer isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />
                     <Navbar onOpenCart={() => setIsCartOpen(true)} />

@@ -251,12 +251,15 @@
         const caseImages = ["https://i.imgur.com/ChrgBN5.jpeg", "https://i.imgur.com/VyuONua.jpeg", "https://i.imgur.com/gii0MRk.jpeg", "https://i.imgur.com/zMXi3pI.jpeg", "https://i.imgur.com/rJqx2Bd.jpeg", "https://i.imgur.com/DhyUWRm.jpeg"];
 
         const mixedCollection = [
+            { id: 'sam-full-titanium', type: 'samsung', name: "L'Impérial Titane", price: "$1,299", img: "https://i.imgur.com/VdtU8ik.jpeg", tag: "Élite" },
             { id: 'dk-black-gold', type: 'diamond', name: "Royal Gold Noir", price: "$3,799", img: "https://imgur.com/sSVEjXx.png", tag: "Luxury" },
+            { id: 'evo-gold', type: 'evolution', name: "Évolution Or Suprême", price: "$1,199", img: "https://i.imgur.com/dproL04.jpeg", tag: "Collection" },
+            { id: 'sam-w8-black', type: 'samsung', name: "L'Obsidienne Noire", price: "$1,199", img: "https://i.imgur.com/bHdgi55.jpeg", tag: "Atelier" },
             { id: 'case-monaco', type: 'case', name: "Monaco GT", price: "$299", img: "https://i.imgur.com/XwgjP4b.jpeg", tag: "New" },
             { id: 'lth-org-blue', type: 'leather', name: "Riviera Sunset", price: "$450", img: "https://i.imgur.com/DbfG4LG.jpeg", tag: "Summer" },
+            { id: 'sam-full-silver', type: 'samsung', name: "L'Impérial Argent", price: "$1,299", img: "https://i.imgur.com/Y4xuxV1.jpeg", tag: "Élite" },
             { id: 'case-carbon', type: 'case', name: "Phantom Carbon", price: "$299", img: "https://i.imgur.com/REPAm8V.jpeg", tag: "Best Seller" },
             { id: 'stl-starlight', type: 'steel', name: "Lumière Stellaire", price: "$359", img: "https://i.imgur.com/C9pzKAo.jpeg", tag: "Trending" },
-            { id: 'case-alps', type: 'case', name: "Alps Sunset", price: "$329", img: "https://i.imgur.com/W71NAmc.jpeg", tag: "Art Series" },
             { id: 'lth-blk', type: 'leather', name: "Midnight Noir", price: "$450", img: "https://i.imgur.com/26f8cc4.jpeg", tag: null },
             { id: 'case-nordic', type: 'case', name: "Nordic Peaks", price: "$329", img: "https://i.imgur.com/E20tmfO.jpeg", tag: "Art Series" },
         ];
@@ -466,6 +469,80 @@
             </section>
         );
 
+        const MexicoInsigniaSection = () => (
+            <section className="relative py-24 md:py-32 overflow-hidden bg-[#0A0A0A] border-t border-white/5">
+                {/* Background Flag Accent */}
+                <div className="absolute top-0 right-0 w-1/3 h-full bg-gradient-to-l from-[#006847]/10 via-transparent to-transparent pointer-events-none"></div>
+                <div className="absolute top-0 left-0 w-1/3 h-full bg-gradient-to-r from-[#CE1126]/10 via-transparent to-transparent pointer-events-none"></div>
+
+                <div className="container mx-auto px-6 relative z-10">
+                    <div className="flex flex-col lg:flex-row items-center gap-16">
+                        {/* Text Content */}
+                        <div className="w-full lg:w-1/2 text-left">
+                            <div className="flex items-center gap-3 mb-6">
+                                <span className="h-[2px] w-12 bg-gradient-to-r from-[#006847] via-white to-[#CE1126]"></span>
+                                <span className="text-white text-xs font-bold tracking-[0.4em] uppercase">Vanto X México</span>
+                            </div>
+                            <h2 className="text-4xl md:text-6xl serif text-white italic mb-6 leading-tight">
+                                El Nuevo <br />
+                                <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#D4AF37] to-[#F1C40F]">Estandarte del Lujo</span>
+                            </h2>
+                            <p className="text-gray-400 font-light text-lg leading-relaxed mb-8">
+                                Celebramos nuestras raíces con la colección más audaz hasta la fecha. "Vanto X México" no es solo un accesorio, es un tributo a la identidad nacional, forjado en polímeros de alta resistencia y detalles en oro.
+                            </p>
+
+                            <ul className="space-y-4 mb-10">
+                                <li className="flex items-center gap-4">
+                                    <div className="w-2 h-2 rounded-full bg-[#006847]"></div>
+                                    <span className="text-white text-sm uppercase tracking-widest">Verde: Esperanza & Vida</span>
+                                </li>
+                                <li className="flex items-center gap-4">
+                                    <div className="w-2 h-2 rounded-full bg-white border border-gray-600"></div>
+                                    <span className="text-white text-sm uppercase tracking-widest">Blanco: Unidad & Pureza</span>
+                                </li>
+                                <li className="flex items-center gap-4">
+                                    <div className="w-2 h-2 rounded-full bg-[#CE1126]"></div>
+                                    <span className="text-white text-sm uppercase tracking-widest">Rojo: Pasión & Sangre</span>
+                                </li>
+                            </ul>
+
+                            <a href="catalogo.html?filter=mexico" className="inline-block px-12 py-4 border border-white/20 hover:border-[#D4AF37] text-white hover:text-[#D4AF37] text-xs font-bold uppercase tracking-[0.2em] transition-all hover:shadow-[0_0_30px_rgba(212,175,55,0.1)]">
+                                Explorar Colección
+                            </a>
+                        </div>
+
+                        {/* Visual Highlight */}
+                        <div className="w-full lg:w-1/2 relative group">
+                            <div className="absolute inset-0 bg-gradient-to-r from-[#006847] via-white to-[#CE1126] blur-[100px] opacity-20 group-hover:opacity-30 transition-opacity"></div>
+                            <div className="relative z-10 grid grid-cols-2 gap-4">
+                                <div className="space-y-4 mt-12">
+                                    <img src="https://i.imgur.com/JeIZxAh.jpeg" className="w-full rounded-sm shadow-2xl border border-white/10 hover:scale-105 transition-transform duration-700" loading="lazy" />
+                                    <img src="https://i.imgur.com/8Y7GVTQ.jpeg" className="w-full rounded-sm shadow-2xl border border-white/10 hover:scale-105 transition-transform duration-700 delay-100" loading="lazy" />
+                                </div>
+                                <div className="space-y-4">
+                                    <img src="https://i.imgur.com/EhUsxBg.jpeg" className="w-full rounded-sm shadow-2xl border border-white/10 hover:scale-105 transition-transform duration-700 delay-200" loading="lazy" />
+                                    <div className="aspect-square bg-[#111] border border-white/10 rounded-sm flex items-center justify-center relative overflow-hidden group/video cursor-pointer" onClick={() => window.location.href = 'catalogo.html?filter=mexico'}>
+                                        <div className="absolute inset-0 bg-black/40 z-10 flex flex-col items-center justify-center">
+                                            <div className="w-12 h-12 rounded-full bg-white/10 backdrop-blur-md flex items-center justify-center border border-white/20 group-hover/video:scale-110 transition-transform">
+                                                <svg className="w-4 h-4 text-white ml-1" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" /></svg>
+                                            </div>
+                                            <span className="text-white text-[9px] uppercase tracking-widest mt-2 font-bold">Ver Campaña</span>
+                                        </div>
+                                        <img src="https://i.imgur.com/VVzKmUQ.jpeg" className="w-full h-full object-cover opacity-60" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="mt-24 text-center border-t border-white/5 pt-12">
+                        <h3 className="text-2xl serif text-white italic mb-4">"México está en nuestro ADN."</h3>
+                        <p className="text-gray-500 text-xs uppercase tracking-widest">Gracias por ser parte de este legado.</p>
+                    </div>
+                </div>
+            </section>
+        );
+
         const AboutSection = () => (
             <section className="py-24 bg-[#050505] relative overflow-hidden">
                 <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1px] h-24 bg-gradient-to-b from-transparent via-[#D4AF37]/50 to-transparent"></div>
@@ -584,7 +661,7 @@
         const App = () => {
             const [isCartOpen, setIsCartOpen] = useState(false);
             return (
-                <div><Navbar onOpenCart={() => setIsCartOpen(true)} /><Hero /><MixedCarousel /><AboutSection /><DualModelSection /><LogisticsAndGallery /><Footer /><CartDrawer isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} /></div>
+                <div><Navbar onOpenCart={() => setIsCartOpen(true)} /><Hero /><MixedCarousel /><MexicoInsigniaSection /><AboutSection /><DualModelSection /><LogisticsAndGallery /><Footer /><CartDrawer isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} /></div>
             );
         };
 
