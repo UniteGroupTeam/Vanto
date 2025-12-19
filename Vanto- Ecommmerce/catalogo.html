@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Le Catalogue | Vanto</title>
+    <link rel="icon" type="image/png" href="https://imgur.com/kbF7hve.png">
+    <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&family=Playfair+Display:ital,wght@0,400;0,600;1,400&display=swap"
+        rel="stylesheet">
+    <style>
+        /* Global Styles */
+        * {
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            background-color: #050505;
+            color: #E5E5E5;
+            font-family: 'Lato', sans-serif;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        .serif {
+            font-family: 'Playfair Display', serif;
+        }
+
+        /* Animations */
+        .fade-in {
+            animation: fadeIn 0.8s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        @keyframes fadeIn {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Glassmorphism */
+        .liquid-glass {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Enhanced Hover */
+        .card-hover {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .card-hover:hover {
+            box-shadow: 0 0 30px rgba(212, 175, 55, 0.15);
+            border-color: rgba(212, 175, 55, 0.3);
+            transform: translateY(-4px);
+        }
+
+        /* Cart Drawer */
+        .cart-drawer {
+            transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            box-shadow: -10px 0 40px rgba(0, 0, 0, 0.5);
+        }
+
+        .cart-open {
+            transform: translateX(0);
+        }
+
+        .cart-closed {
+            transform: translateX(100%);
+        }
+
+        /* Scrollbar */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        /* Custom Scrollbar for Desktop */
+        @media (min-width: 768px) {
+            ::-webkit-scrollbar {
+                width: 8px;
+            }
+
+            ::-webkit-scrollbar-track {
+                background: #0a0a0a;
+            }
+
+            ::-webkit-scrollbar-thumb {
+                background: #333;
+                border-radius: 4px;
+                transition: background 0.3s;
+            }
+
+            ::-webkit-scrollbar-thumb:hover {
+                background: #D4AF37;
+            }
+        }
+
+        /* Mobile Touch Improvements */
+        @media (max-width: 767px) {
+
+            button,
+            a {
+                min-height: 44px;
+                min-width: 44px;
+            }
+
+            .touch-target {
+                padding: 12px 16px;
+            }
+        }
+
+        /* Reduce Motion */
+        @media (prefers-reduced-motion: reduce) {
+
+            *,
+            *::before,
+            *::after {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
+        }
+
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: rgba(212, 175, 55, 0.3);
+            border-radius: 10px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: rgba(212, 175, 55, 0.8);
+        }
+    </style>
+</head>
+
+<body>
+    <div id="root"></div>
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+        const Icons = {
+            ShoppingBag: ({ size = 24 }) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 0 1-8 0"></path></svg>,
+            X: ({ size = 24 }) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>,
+            Minus: ({ size = 16 }) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><line x1="5" y1="12" x2="19" y2="12"></line></svg>,
+            Plus: ({ size = 16 }) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>,
+            Trash: ({ size = 16 }) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>,
+            Sliders: ({ size = 20 }) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><line x1="4" y1="21" x2="4" y2="14"></line><line x1="4" y1="10" x2="4" y2="3"></line><line x1="12" y1="21" x2="12" y2="12"></line><line x1="12" y1="8" x2="12" y2="3"></line><line x1="20" y1="21" x2="20" y2="16"></line><line x1="20" y1="12" x2="20" y2="3"></line><line x1="1" y1="14" x2="7" y2="14"></line><line x1="9" y1="8" x2="15" y2="8"></line><line x1="17" y1="16" x2="23" y2="16"></line></svg>,
+            Check: ({ size = 16 }) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
+        };
+
+        const FilterDrawer = ({ isOpen, onClose, activeCategory, setCategory, activeColor, setColor, maxPrice, setMaxPrice }) => {
+
+            // Grouping logic for better UX
+            const groups = [
+                {
+                    title: "Collections Vedettes",
+                    items: [
+                        { id: 'mexico', label: "Vanto X México" },
+                        { id: 'diamond', label: "L'Édition Royale" },
+                        { id: 'samsung', label: "Samsung Series" }
+                    ]
+                },
+                {
+                    title: "Bracelets Apple Watch",
+                    items: [
+                        { id: 'evolution', label: "L'Évolution" },
+                        { id: 'steel', label: "L'Acier" },
+                        { id: 'leather', label: "Atelier Cuir" }
+                    ]
+                },
+                {
+                    title: "Protection iPhone",
+                    items: [
+                        { id: 'case', label: "L'Armure Cases" },
+                        { id: 'cooling', label: "MagSafe Aero" }
+                    ]
+                }
+            ];
+
+            return (
+                <>
+                    <div className={`fixed inset-0 bg-black/60 backdrop-blur-md z-[60] transition-opacity duration-500 ${isOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`} onClick={onClose}></div>
+                    <div className={`fixed top-0 right-0 h-[100dvh] w-full md:w-[420px] bg-[#0A0A0A] border-l border-white/10 z-[70] transform transition-transform duration-500 ease-out flex flex-col shadow-2xl ${isOpen ? 'translate-x-0' : 'translate-x-full'}`}>
+                        <div className="p-8 border-b border-white/10 flex justify-between items-center bg-[#050505]">
+                            <div>
+                                <h2 className="text-2xl serif text-white italic mb-1">Filtrer</h2>
+                                <p className="text-[10px] text-gray-500 uppercase tracking-widest">Affinez Votre Recherche</p>
+                            </div>
+                            <button onClick={onClose} className="text-gray-400 hover:text-[#D4AF37] transition-colors"><Icons.X size={28} /></button>
+                        </div>
+
+                        <div className="flex-1 overflow-y-auto p-8 space-y-12 custom-scrollbar">
+
+                            {/* Categories Groups */}
+                            <div className="space-y-10">
+                                {groups.map((group, idx) => (
+                                    <div key={idx} className="animate-fade-in-up" style={{ animationDelay: `${idx * 100}ms` }}>
+                                        <h3 className="text-[10px] font-bold text-[#D4AF37] uppercase tracking-[0.3em] mb-4 pl-1 border-l-2 border-[#D4AF37]">{group.title}</h3>
+                                        <div className="grid grid-cols-1 gap-2">
+                                            {group.items.map(cat => (
+                                                <button
+                                                    key={cat.id}
+                                                    onClick={() => setCategory(activeCategory === cat.id ? 'all' : cat.id)}
+                                                    className={`group flex items-center justify-between w-full py-3 px-4 rounded-lg border transition-all duration-300 ${activeCategory === cat.id ? 'bg-[#D4AF37]/10 border-[#D4AF37] text-white' : 'bg-[#111] border-transparent text-gray-400 hover:border-white/20 hover:text-white'}`}
+                                                >
+                                                    <span className="text-xs uppercase tracking-widest">{cat.label}</span>
+                                                    <span className={`w-4 h-4 rounded-full border flex items-center justify-center transition-all ${activeCategory === cat.id ? 'border-[#D4AF37] bg-[#D4AF37] border-0' : 'border-gray-600 group-hover:border-white'}`}>
+                                                        {activeCategory === cat.id && <Icons.Check size={10} className="text-black" />}
+                                                    </span>
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+
+                            {/* Colors */}
+                            <div className="animate-fade-in-up" style={{ animationDelay: '300ms' }}>
+                                <h3 className="text-[10px] font-bold text-[#D4AF37] uppercase tracking-[0.3em] mb-4 pl-1 border-l-2 border-[#D4AF37]">Couleurs</h3>
+                                <div className="flex flex-wrap gap-3">
+                                    {['black', 'gold', 'silver', 'blue', 'red', 'green', 'pink', 'white', 'purple', 'orange', 'grey'].map(c => (
+                                        <button
+                                            key={c}
+                                            onClick={() => setColor(activeColor === c ? 'all' : c)}
+                                            className={`w-10 h-10 rounded-full border transition-all duration-300 hover:scale-110 flex items-center justify-center relative shadow-lg ${activeColor === c ? 'border-white scale-110 ring-2 ring-[#D4AF37]/50' : 'border-white/10 hover:border-white'}`}
+                                            title={c}
+                                            style={{
+                                                background: c
+                                            }}
+                                        >
+                                            {activeColor === c && <Icons.Check size={14} className={['white', 'yellow', 'pink', 'silver'].includes(c) ? 'text-black' : 'text-white'} />}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+
+                            {/* Price Filter */}
+                            <div className="animate-fade-in-up" style={{ animationDelay: '400ms' }}>
+                                <h3 className="text-[10px] font-bold text-[#D4AF37] uppercase tracking-[0.3em] mb-6 pl-1 border-l-2 border-[#D4AF37]">Budget</h3>
+                                <div className="bg-[#111] p-6 rounded-xl border border-white/5">
+                                    <div className="flex justify-between text-xs text-gray-400 mb-6 font-mono">
+                                        <span>$0</span>
+                                        <span className="text-[#D4AF37] font-bold text-base">${maxPrice.toLocaleString()}</span>
+                                    </div>
+                                    <input
+                                        type="range"
+                                        min="0"
+                                        max="10000"
+                                        step="100"
+                                        value={maxPrice}
+                                        onChange={(e) => setMaxPrice(Number(e.target.value))}
+                                        className="w-full h-1 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-[#D4AF37]"
+                                    />
+                                </div>
+                            </div>
+
+                        </div>
+
+                        <div className="p-6 border-t border-white/10 bg-[#050505]">
+                            <button onClick={onClose} className="w-full bg-gradient-to-r from-[#D4AF37] to-[#B8860B] hover:shadow-[0_0_20px_rgba(212,175,55,0.4)] text-black py-4 text-xs font-bold uppercase tracking-[0.3em] transition-all transform hover:-translate-y-1 rounded-sm">
+                                Voir Résultats
+                            </button>
+                            <button onClick={() => { setCategory('all'); setColor('all'); setMaxPrice(10000); }} className="w-full mt-4 text-gray-500 hover:text-white text-[10px] uppercase tracking-widest transition-colors">
+                                Nettoyer les filtres
+                            </button>
+                        </div>
+                    </div>
+                </>
+            );
+        };
+        const CartDrawer = ({ isOpen, onClose }) => {
+            const [cart, setCart] = useState([]);
+            const [total, setTotal] = useState(0);
+            useEffect(() => {
+                const updateCart = () => {
+                    const savedCart = JSON.parse(localStorage.getItem('vanto_cart') || '[]');
+                    setCart(savedCart);
+                    const newTotal = savedCart.reduce((acc, item) => {
+                        const price = parseFloat(item.price.replace(/[^0-9.]/g, ''));
+                        return acc + (price * (item.qty || 1));
+                    }, 0);
+                    setTotal(newTotal);
+                };
+                updateCart();
+                window.addEventListener('storage', updateCart);
+                window.addEventListener('cartUpdated', updateCart);
+                return () => { window.removeEventListener('storage', updateCart); window.removeEventListener('cartUpdated', updateCart); };
+            }, []);
+            const updateQty = (index, delta) => {
+                const newCart = [...cart];
+                newCart[index].qty = Math.max(1, (newCart[index].qty || 1) + delta);
+                localStorage.setItem('vanto_cart', JSON.stringify(newCart));
+                window.dispatchEvent(new Event('cartUpdated'));
+            };
+            const removeItem = (index) => {
+                const newCart = cart.filter((_, i) => i !== index);
+                localStorage.setItem('vanto_cart', JSON.stringify(newCart));
+                window.dispatchEvent(new Event('cartUpdated'));
+            };
+            const checkout = () => {
+                let msg = "Hola Vanto, deseo confirmar mi pedido exclusivo:%0A%0A";
+                cart.forEach(item => {
+                    msg += `▪ ${item.name} (${item.variant}) x${item.qty || 1} - ${item.price}%0A`;
+                });
+                msg += `%0A*TOTAL ESTIMADO: $${total.toLocaleString()} MXN*%0A%0A--------------------------------%0A%0AMi País es: %0AMi Código Postal es: %0A%0AQuedo en espera para finalizar la compra.`;
+                window.open(`https://wa.me/525574123521?text=${msg}`, '_blank');
+            };
+            return (
+                <>
+                    <div className={`fixed inset-0 bg-black/60 backdrop-blur-sm z-[60] transition-opacity duration-300 ${isOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`} onClick={onClose}></div>
+                    <div className={`fixed top-0 right-0 h-[100dvh] w-full md:w-[450px] bg-[#0A0A0A] border-l border-white/10 z-[70] cart-drawer ${isOpen ? 'cart-open' : 'cart-closed'} flex flex-col`}>
+                        <div className="p-6 border-b border-white/10 flex justify-between items-center"><h2 className="text-xl serif text-white italic">Tu Selección</h2><button onClick={onClose} className="text-gray-400 hover:text-white"><Icons.X /></button></div>
+                        <div className="flex-1 overflow-y-auto p-6 space-y-6">{cart.length === 0 ? <div className="text-center text-gray-500 mt-20">Tu bolsa está vacía.</div> : cart.map((item, idx) => (<div key={idx} className="flex gap-4 bg-[#111] p-4 rounded-sm border border-white/5"><img src={item.img} className="w-20 h-24 object-cover rounded-sm" /><div className="flex-1"><div className="flex justify-between items-start mb-1"><h3 className="text-sm text-white font-medium">{item.name}</h3><button onClick={() => removeItem(idx)} className="text-gray-600 hover:text-red-500"><Icons.Trash /></button></div><p className="text-[10px] text-gray-400 uppercase tracking-wider mb-3">{item.variant}</p><div className="flex justify-between items-center"><p className="text-sm text-[#D4AF37]">{item.price}</p><div className="flex items-center gap-3 border border-white/10 px-2 py-1 rounded-sm"><button onClick={() => updateQty(idx, -1)} className="text-gray-400 hover:text-white"><Icons.Minus /></button><span className="text-xs text-white w-4 text-center">{item.qty || 1}</span><button onClick={() => updateQty(idx, 1)} className="text-gray-400 hover:text-white"><Icons.Plus /></button></div></div></div></div>))}</div>
+                        <div className="p-6 border-t border-white/10 bg-[#050505] mb-safe"><div className="flex justify-between items-center mb-4 pb-4 border-b border-white/5"><span className="text-gray-400 text-xs uppercase tracking-widest">Total Estimado</span><span className="text-xl serif text-[#D4AF37]">${total.toLocaleString()} MXN</span></div><button onClick={checkout} disabled={cart.length === 0} className="w-full bg-[#D4AF37] hover:bg-white text-black py-4 text-xs font-bold uppercase tracking-[0.2em] transition-colors disabled:opacity-50 disabled:cursor-not-allowed">FINALIZAR COMPRA PRIVADA</button><p className="text-[9px] text-gray-600 text-center mt-3 uppercase tracking-widest">Pago y envío coordinado vía WhatsApp</p></div>
+                    </div>
+                </>
+            );
+        };
+        const diamondProducts = [
+            { id: "dk-black-std", type: "diamond", color: "black", name: "Royal Obsidian", price: "$3,799", img: "https://imgur.com/mTZrfNk.png", desc: "Acero Negro Mate" },
+            { id: "dk-black-gold", type: "diamond", color: "gold", name: "Royal Gold Noir", price: "$3,799", img: "https://imgur.com/sSVEjXx.png", desc: "Marco Oro 18K Style" },
+            { id: "dk-black-slv", type: "diamond", name: "Royal Silver Noir", price: "$3,799", img: "https://imgur.com/BVxeZjT.png", desc: "Plata Espejo" },
+            { id: "dk-red-std", type: "diamond", name: "Imperial Crimson", price: "$3,799", img: "https://imgur.com/F9maphh.png", desc: "Rojo Intenso" },
+            { id: "dk-red-gold", type: "diamond", name: "Imperial Gold Red", price: "$3,799", img: "https://imgur.com/iEo5vH6.png", desc: "Lujo Asiático" },
+            { id: "dk-red-slv", type: "diamond", name: "Imperial Silver Red", price: "$3,799", img: "https://imgur.com/KZAkaCL.png", desc: "Alto Contraste" },
+            { id: "dk-white-std", type: "diamond", name: "Arctic Pure", price: "$3,799", img: "https://imgur.com/aJBqGPw.png", desc: "Blanco Minimalista" },
+            { id: "dk-white-gold", type: "diamond", name: "Arctic Gold", price: "$3,799", img: "https://imgur.com/RhQXnrz.png", desc: "Elegancia Pura" },
+            { id: "dk-white-slv", type: "diamond", name: "Arctic Silver", price: "$3,799", img: "https://imgur.com/XXZWf5V.png", desc: "Clean Look" },
+            { id: "dk-org-std", type: "diamond", name: "Sunset Sport", price: "$3,799", img: "https://imgur.com/Ecasdst.png", desc: "Naranja Vibrante" },
+            { id: "dk-org-gold", type: "diamond", name: "Sunset Gold", price: "$3,799", img: "https://imgur.com/49SZTDb.png", desc: "Exclusivo" },
+            { id: "dk-org-slv", type: "diamond", name: "Sunset Silver", price: "$3,799", img: "https://imgur.com/pDk7Gkq.png", desc: "Moderno" },
+            { id: "dk-grn-std", type: "diamond", name: "Neon Venom", price: "$3,799", img: "https://imgur.com/4XHXHEr.png", desc: "Verde Ácido" },
+            { id: "dk-grn-slv", type: "diamond", name: "Neon Silver", price: "$3,799", img: "https://imgur.com/6uOtpc8.png", desc: "Futurista" },
+        ];
+        const leatherProducts = [
+            { id: "lth-rose-wine", type: "leather", color: "pink", name: "Rouge Rosé", price: "$450", img: "https://i.imgur.com/oetFG2D.jpeg", desc: "Rosa con detalles Vino" },
+            { id: "lth-org-blue", type: "leather", color: "orange", name: "Riviera Sunset", price: "$450", img: "https://i.imgur.com/DbfG4LG.jpeg", desc: "Naranja y Azul" },
+            { id: "lth-pink-coff", type: "leather", color: "pink", name: "Dusk & Clay", price: "$450", img: "https://i.imgur.com/8jOaNA1.jpeg", desc: "Rosa y Café" },
+            { id: "lth-blk", type: "leather", color: "black", name: "Midnight Noir", price: "$450", img: "https://i.imgur.com/26f8cc4.jpeg", desc: "Negro Clásico" },
+            { id: "lth-prp", type: "leather", color: "purple", name: "Lavender Mist", price: "$450", img: "https://i.imgur.com/O8p2vAQ.jpeg", desc: "Morado Claro" },
+            { id: "lth-wht", type: "leather", color: "white", name: "Arctic Pure", price: "$450", img: "https://i.imgur.com/kQjfrpr.jpeg", desc: "Blanco Absoluto" },
+            { id: "lth-coff-drk", type: "leather", color: "brown", name: "Espresso Deep", price: "$450", img: "https://i.imgur.com/FwCzKRU.jpeg", desc: "Café Oscuro" },
+            { id: "lth-tri-blue", type: "leather", color: "blue", name: "Aegean Tricolor", price: "$299", img: "https://i.imgur.com/6A8YnPh.jpeg", desc: "Azules y Crema" },
+            { id: "lth-coff", type: "leather", color: "brown", name: "Chestnut Classic", price: "$450", img: "https://i.imgur.com/GzkT5e9.jpeg", desc: "Café Medio" },
+            { id: "lth-blu-wine", type: "leather", color: "blue", name: "Royal Bordeaux", price: "$299", img: "https://i.imgur.com/mIrorgs.jpeg", desc: "Azul y Vino" },
+            { id: "lth-tri-org", type: "leather", color: "orange", name: "Mediterranean Voyage", price: "$299", img: "https://i.imgur.com/tHUvBYW.jpeg", desc: "Azul, Crema, Naranja" },
+            { id: "lth-blu-drk", type: "leather", color: "blue", name: "Abyss Blue", price: "$450", img: "https://i.imgur.com/GnF33co.jpeg", desc: "Azul Oscuro" },
+            { id: "lth-titan-org", type: "leather", color: "orange", name: "Titanium Orange", price: "$450", img: "https://i.imgur.com/t6dEVhU.jpeg", desc: "Naranja iPhone 17 Style" },
+            { id: "lth-pink-crm", type: "leather", color: "pink", name: "Blush Cream", price: "$299", img: "https://i.imgur.com/USnTQWe.jpeg", desc: "Rosa y Crema" },
+            { id: "lth-red-wine", type: "leather", color: "red", name: "Burgundy Grand", price: "$450", img: "https://i.imgur.com/6XdpRhE.jpeg", desc: "Rojo Vino" },
+            { id: "lth-nvy-hr", type: "leather", color: "blue", name: "Nautical Heritage", price: "$259", img: "https://i.imgur.com/GR0TTLI.jpeg", desc: "Azul Marino / Interior Café" },
+            { id: "lth-org-crm", type: "leather", color: "orange", name: "Creamsicle Luxe", price: "$299", img: "https://i.imgur.com/Z6skV8g.jpeg", desc: "Naranja y Crema" },
+            { id: "lth-tri-ylw", type: "leather", color: "yellow", name: "Tropical Sunrise", price: "$315", img: "https://i.imgur.com/ibE0yCh.jpeg", desc: "Amarillo, Naranja, Rosa" },
+            { id: "lth-ylw", type: "leather", color: "yellow", name: "Canary Vivid", price: "$450", img: "https://i.imgur.com/A4GyVnC.jpeg", desc: "Amarillo Intenso" },
+            { id: "lth-grn", type: "leather", color: "green", name: "Verde Bottega", price: "$450", img: "https://i.imgur.com/JbjjzEk.jpeg", desc: "Verde Puro" },
+            { id: "lth-blk-drk", type: "leather", color: "black", name: "Obsidian Shadow", price: "$450", img: "https://i.imgur.com/sZj8ia6.jpeg", desc: "Negro Profundo" },
+            { id: "lth-panda", type: "leather", color: "white", name: "Panda Contrast", price: "$299", img: "https://i.imgur.com/6KXCzdj.jpeg", desc: "Negro y Blanco" },
+            { id: "lth-cyn", type: "leather", color: "blue", name: "Electric Cyan", price: "$450", img: "https://i.imgur.com/y2V4xRx.jpeg", desc: "Azul Chicle" },
+            { id: "lth-old", type: "leather", color: "brown", name: "Heritage Tan", price: "$450", img: "https://i.imgur.com/666Nokk.jpeg", desc: "Old Money Style" },
+        ];
+        const steelProducts = [
+            { id: "stl-stripe-blk", type: "steel", color: "silver", name: "Métal Duo Noir", price: "$399", img: "https://i.imgur.com/GtKHK1l.jpeg", desc: "Plata con línea negra" },
+            { id: "stl-stripe-gld", type: "steel", color: "gold", name: "Métal Duo Or", price: "$399", img: "https://i.imgur.com/OuDfSjd.jpeg", desc: "Plata con línea dorada" },
+            { id: "stl-stripe-pnk", type: "steel", color: "pink", name: "Métal Duo Rose", price: "$399", img: "https://i.imgur.com/XdOZWKN.jpeg", desc: "Plata con línea rosa" },
+            { id: "stl-starlight", type: "steel", color: "gold", name: "Lumière Stellaire", price: "$359", img: "https://i.imgur.com/C9pzKAo.jpeg", desc: "Starlight Champagne" },
+            { id: "stl-titan", type: "steel", color: "silver", name: "Titane Brut", price: "$359", img: "https://i.imgur.com/Gt61Uh4.jpeg", desc: "Acabado Titanio" },
+            { id: "stl-aqua", type: "steel", color: "green", name: "Aqua Marine", price: "$359", img: "https://i.imgur.com/mzdCuS3.jpeg", desc: "Verde Agua" },
+            { id: "stl-grn-drk", type: "steel", color: "green", name: "Vert Tarraco", price: "$359", img: "https://i.imgur.com/T9C7BD0.jpeg", desc: "Verde Bosque Metálico" },
+            { id: "stl-blk", type: "steel", color: "black", name: "Noir Infini", price: "$359", img: "https://i.imgur.com/VHYFYQd.jpeg", desc: "Negro Total" },
+            { id: "stl-blu", type: "steel", color: "blue", name: "Bleu Océan", price: "$359", img: "https://i.imgur.com/ZYmOsVO.jpeg", desc: "Azul Eléctrico" },
+            { id: "stl-gld", type: "steel", color: "gold", name: "Or Classique", price: "$359", img: "https://i.imgur.com/K4LPFFt.jpeg", desc: "Dorado Puro" },
+            { id: "stl-midnight", type: "steel", color: "blue", name: "Minuit Métallique", price: "$359", img: "https://i.imgur.com/HSjuxdE.jpeg", desc: "Azul Medianoche" },
+            { id: "stl-rose-gld", type: "steel", color: "pink", name: "Or Rose", price: "$359", img: "https://i.imgur.com/g7AXy9m.jpeg", desc: "Rose Gold" },
+            { id: "stl-pnk", type: "steel", color: "pink", name: "Rose Métal", price: "$359", img: "https://i.imgur.com/5ove4ku.jpeg", desc: "Rosa Suave" },
+            { id: "stl-slv", type: "steel", color: "silver", name: "Argent Pur", price: "$359", img: "https://i.imgur.com/PnYTzC9.jpeg", desc: "Plata Clásica" },
+        ];
+        const caseProducts = [
+            { id: "case-monaco", type: "case", color: "grey", name: "Monaco GT", price: "$299", img: "https://i.imgur.com/XwgjP4b.jpeg", desc: "Gris Sport con Franja" },
+            { id: "case-espresso", type: "case", color: "brown", name: "Espresso Duo", price: "$299", img: "https://i.imgur.com/JfOHQ3y.jpeg", desc: "Café Bitono" },
+            { id: "case-carbon", type: "case", color: "black", name: "Phantom Carbon", price: "$299", img: "https://i.imgur.com/REPAm8V.jpeg", desc: "Fibra de Carbono Negra" },
+            { id: "case-alps", type: "case", color: "red", name: "Alps Sunset", price: "$329", img: "https://i.imgur.com/W71NAmc.jpeg", desc: "Diseño Montaña Rojo" },
+            { id: "case-nordic", type: "case", color: "blue", name: "Nordic Peaks", price: "$329", img: "https://i.imgur.com/E20tmfO.jpeg", desc: "Diseño Montaña Azul" },
+            { id: "case-bordeaux", type: "case", color: "black", name: "Bordeaux Accent", price: "$299", img: "https://i.imgur.com/Xk7aJVF.jpeg", desc: "Negro con detalle Vino" },
+            { id: "case-heritage", type: "case", color: "black", name: "Heritage Stripe", price: "$299", img: "https://i.imgur.com/WRlMIPQ.jpeg", desc: "Franja Tricolor" },
+            { id: "case-urban", type: "case", color: "black", name: "Urban Camo", price: "$329", img: "https://i.imgur.com/q8wF3Qa.jpeg", desc: "Franja Monocromática" },
+        ];
+        const evolutionProducts = [
+            { id: "evo-gold", type: "evolution", color: "gold", name: "Évolution Or Suprême", price: "$1,199", img: "https://i.imgur.com/dproL04.jpeg", desc: "Transformación completa en Oro" },
+            { id: "evo-silver", type: "evolution", color: "silver", name: "Évolution Argent Pur", price: "$1,199", img: "https://i.imgur.com/Svt4GrL.jpeg", desc: "Transformación completa en Plata" },
+            { id: "evo-rose", type: "evolution", color: "pink", name: "Évolution Rose Éternel", price: "$1,199", img: "https://i.imgur.com/NsgJIyr.jpeg", desc: "Transformación completa en Oro Rosa" },
+            { id: "evo-black", type: "evolution", color: "black", name: "Évolution Noir Profond", price: "$1,199", img: "https://i.imgur.com/14RKcd9.jpeg", desc: "Transformación completa en Negro" }
+        ];
+
+        const mexicoProducts = [
+            // Special Editions
+            { id: "mx-flag-clear-gold", type: "mexico", name: "Vanto X México: Insignia Gold", price: "$1,999", img: "https://i.imgur.com/VVzKmUQ.jpeg", desc: "Edición Bandera • Clear Case • Oro", tag: "Flagship" },
+            { id: "mx-flag-clear-slv", type: "mexico", name: "Vanto X México: Insignia Silver", price: "$1,999", img: "https://i.imgur.com/mtAmbIu.jpeg", desc: "Edición Bandera • Clear Case • Plata", tag: "Flagship" },
+            { id: "mx-flag-blk-gold", type: "mexico", name: "Legado Tricolor Gold", price: "$1,999", img: "https://i.imgur.com/eVx69va.jpeg", desc: "Edición Bandera • Black Case • Oro", tag: "Mexico" },
+            { id: "mx-flag-blk-slv", type: "mexico", name: "Legado Tricolor Silver", price: "$1,999", img: "https://i.imgur.com/o3rowKd.jpeg", desc: "Edición Bandera • Black Case • Plata", tag: "Mexico" },
+            { id: "mx-wht-blk-gold", type: "mexico", name: "Glaciar Gold Noir", price: "$1,999", img: "https://i.imgur.com/FEXTaqK.jpeg", desc: "Blanco Puro • Black Case • Oro", tag: "Mexico" },
+            { id: "mx-wht-blk-slv", type: "mexico", name: "Glaciar Silver Noir", price: "$1,999", img: "https://i.imgur.com/0l0CBir.jpeg", desc: "Blanco Puro • Black Case • Plata", tag: "Mexico" },
+            { id: "mx-wht-clear-gold", type: "mexico", name: "Glaciar Gold Clear", price: "$1,999", img: "https://i.imgur.com/VCNp3RX.jpeg", desc: "Blanco Puro • Clear Case • Oro", tag: "Mexico" },
+            { id: "mx-wht-clear-slv", type: "mexico", name: "Glaciar Silver Clear", price: "$1,999", img: "https://i.imgur.com/PQL6JEw.jpeg", desc: "Blanco Puro • Clear Case • Plata", tag: "Mexico" },
+            // Standard Editions
+            { id: "mx-blk-gold", type: "mexico", name: "Obsidian Royal Gold", price: "$1,899", img: "https://i.imgur.com/bCJOQaI.jpeg", desc: "Negro Profundo • Black Case • Oro" },
+            { id: "mx-blk-slv", type: "mexico", name: "Obsidian Royal Silver", price: "$1,899", img: "https://i.imgur.com/4CanOR6.jpeg", desc: "Negro Profundo • Black Case • Plata" },
+            { id: "mx-blk-clear-gold", type: "mexico", name: "Obsidian Clear Gold", price: "$1,899", img: "https://i.imgur.com/v6p6Bhy.jpeg", desc: "Negro Profundo • Clear Case • Oro" },
+            { id: "mx-blk-clear-slv", type: "mexico", name: "Obsidian Clear Silver", price: "$1,899", img: "https://i.imgur.com/YCdAQVC.jpeg", desc: "Negro Profundo • Clear Case • Plata" },
+            { id: "mx-org-blk-gold", type: "mexico", name: "Sunset Gold Noir", price: "$1,899", img: "https://i.imgur.com/uBrF2I3.jpeg", desc: "Naranja • Black Case • Oro" },
+            { id: "mx-org-clear-gold", type: "mexico", name: "Sunset Clear Gold", price: "$1,899", img: "https://i.imgur.com/aLrBsRv.jpeg", desc: "Naranja • Clear Case • Oro" },
+            { id: "mx-red-blk-gold", type: "mexico", name: "Crimson Gold Noir", price: "$1,899", img: "https://i.imgur.com/9ZLZDcv.jpeg", desc: "Rojo Intenso • Black Case • Oro" },
+            { id: "mx-trans-blk-gold", type: "mexico", name: "Crystal Black Gold", price: "$1,899", img: "https://i.imgur.com/HkLRSIT.jpeg", desc: "Cristal • Black Case • Oro" },
+            { id: "mx-trans-blk-slv", type: "mexico", name: "Crystal Black Silver", price: "$1,899", img: "https://i.imgur.com/Nea72qj.jpeg", desc: "Cristal • Black Case • Plata" },
+            { id: "mx-trans-clear-gold", type: "mexico", name: "Crystal Clear Gold", price: "$1,899", img: "https://i.imgur.com/zZDFtKC.jpeg", desc: "Cristal • Clear Case • Oro" },
+            { id: "mx-trans-clear-slv", type: "mexico", name: "Crystal Clear Silver", price: "$1,899", img: "https://i.imgur.com/JSTwivo.jpeg", desc: "Cristal • Clear Case • Plata" },
+        ];
+
+        const coolingProducts = [
+            { id: "cool-purple", type: "cooling", name: "MagSafe Aero: Deep Purple", price: "$299", img: "https://i.imgur.com/9dBH4Hk.jpeg", desc: "Refrigeración Activa • Púrpura Profundo", tag: "New Tech" },
+            { id: "cool-pink", type: "cooling", name: "MagSafe Aero: Rose Petal", price: "$299", img: "https://i.imgur.com/fypoDxt.jpeg", desc: "Refrigeración Activa • Rosa Metalizado", tag: "New Tech" },
+            { id: "cool-black", type: "cooling", name: "MagSafe Aero: Stealth Black", price: "$299", img: "https://i.imgur.com/N2We4SI.jpeg", desc: "Refrigeración Activa • Negro Mate", tag: "Best Seller" },
+            { id: "cool-green", type: "cooling", name: "MagSafe Aero: Forest Green", price: "$299", img: "https://i.imgur.com/h0R25qD.jpeg", desc: "Refrigeración Activa • Verde Bosque", tag: "New Tech" },
+            { id: "cool-navy", type: "cooling", name: "MagSafe Aero: Navy Blue", price: "$299", img: "https://i.imgur.com/kfB2tDy.jpeg", desc: "Refrigeración Activa • Azul Marino", tag: "Classic" },
+            { id: "cool-grey", type: "cooling", name: "MagSafe Aero: Titanium Grey", price: "$299", img: "https://i.imgur.com/Uy7y3RB.jpeg", desc: "Refrigeración Activa • Gris Titanio", tag: "New Tech" },
+            { id: "cool-orange", type: "cooling", name: "MagSafe Aero: Sunset Orange", price: "$299", img: "https://i.imgur.com/d4EyPEv.jpeg", desc: "Refrigeración Activa • Naranja Atardecer", tag: "Summer" },
+            { id: "cool-light-pink", type: "cooling", name: "MagSafe Aero: Blush Pink", price: "$299", img: "https://i.imgur.com/a3tqGUF.jpeg", desc: "Refrigeración Activa • Rosa Clarísimo", tag: "Soft" },
+            { id: "cool-light-blue", type: "cooling", name: "MagSafe Aero: Sky Blue", price: "$299", img: "https://i.imgur.com/D4VAVaj.jpeg", desc: "Refrigeración Activa • Azul Cielo", tag: "Soft" },
+            { id: "cool-white", type: "cooling", name: "MagSafe Aero: Ghost White", price: "$299", img: "https://i.imgur.com/IJrWEUC.jpeg", desc: "Refrigeración Activa • Blanco Puro", tag: "Minimal" },
+        ];
+
+        const samsungProducts = [
+            { id: "sam-w8-black", type: "samsung", name: "L'Obsidienne Noire", price: "$1,199", img: "https://i.imgur.com/bHdgi55.jpeg", desc: "Kit de Modificación • Acero Inoxidable • Noir", tag: "Atelier" },
+            { id: "sam-w8-silver", type: "samsung", name: "L'Argent Pur", price: "$1,199", img: "https://i.imgur.com/CAIj1Wc.jpeg", desc: "Kit de Modificación • Acero Inoxidable • Argent", tag: "Classique" },
+            { id: "sam-w8-titanium", type: "samsung", name: "Le Titane", price: "$1,199", img: "https://i.imgur.com/5VPz7uM.jpeg", desc: "Kit de Modificación • Acero Inoxidable • Titane", tag: "Premium" },
+            // Full Steel Collection
+            { id: "sam-full-black", type: "samsung", name: "L'Impérial Noir", price: "$1,299", img: "https://i.imgur.com/qkxpay4.jpeg", desc: "Full Acero 316L • Brazalete Eslabones • Noir Absolu", tag: "Élite" },
+            { id: "sam-full-silver", type: "samsung", name: "L'Impérial Argent", price: "$1,299", img: "https://i.imgur.com/Y4xuxV1.jpeg", desc: "Full Acero 316L • Brazalete Eslabones • Argent Sterling", tag: "Élite" },
+            { id: "sam-full-titanium", type: "samsung", name: "L'Impérial Titane", price: "$1,299", img: "https://i.imgur.com/VdtU8ik.jpeg", desc: "Full Acero 316L • Brazalete Eslabones • Titane Brut", tag: "Élite" },
+        ];
+
+        // Mexico collection moved to top of the list for priority visibility
+        const allProducts = [...mexicoProducts, ...coolingProducts, ...samsungProducts, ...diamondProducts, ...leatherProducts, ...steelProducts, ...caseProducts, ...evolutionProducts];
+        const Navbar = ({ onOpenCart }) => {
+            const [cartCount, setCartCount] = useState(0);
+            useEffect(() => {
+                const update = () => setCartCount(JSON.parse(localStorage.getItem('vanto_cart') || '[]').length);
+                update();
+                window.addEventListener('cartUpdated', update);
+                window.addEventListener('storage', update);
+                return () => { window.removeEventListener('cartUpdated', update); window.removeEventListener('storage', update); };
+            }, []);
+            return (
+                <nav className="fixed w-full z-50 py-4 md:py-6 px-4 md:px-8 flex justify-between items-center bg-[#050505]/98 backdrop-blur-xl border-b border-white/5 top-0 left-0 right-0 shadow-lg">
+                    <div className="flex items-center gap-6 md:gap-8">
+                        <a href="index.html" className="text-gray-400 text-xs tracking-widest hover:text-white uppercase transition-all duration-300 touch-target">Inicio</a>
+                        <a href="catalogo.html" className="text-white text-xs tracking-widest uppercase transition-all duration-300 touch-target border-b-2 border-[#D4AF37]">Catálogo</a>
+                    </div>
+                    <a href="index.html" className="transform hover:scale-105 transition-transform duration-300">
+                        <img src="https://imgur.com/JZmpC36.png" alt="VANTO" className="h-7 md:h-10 invert brightness-200" />
+                    </a>
+                    <div className="flex items-center gap-4 md:gap-8">
+                        <button onClick={onOpenCart} className="relative text-white hover:text-[#D4AF37] transition-all duration-300 p-2 cursor-pointer hover:scale-110 touch-target">
+                            <Icons.ShoppingBag size={22} />
+                            {cartCount > 0 && (
+                                <span className="absolute -top-1 -right-1 bg-gradient-to-br from-[#D4AF37] to-[#B8860B] text-black text-[9px] font-bold w-5 h-5 rounded-full flex items-center justify-center shadow-lg animate-pulse">
+                                    {cartCount}
+                                </span>
+                            )}
+                        </button>
+                    </div>
+                </nav>
+            );
+        };
+        const ProductCard = ({ item }) => {
+            const url = `producto.html?id=${item.id}&type=${item.type}`;
+            const isRoyal = item.type === 'diamond';
+            const isAtelier = item.type === 'leather';
+
+            // Fake discount logic
+            const currentPriceVal = parseInt(item.price.replace(/[^0-9]/g, ''));
+            const fakeOriginal = isAtelier ? `$${Math.round(currentPriceVal * 1.4).toLocaleString()}` : null;
+
+            return (
+                <a href={url} className={`group block mb-4 md:mb-8 fade-in relative ${isRoyal ? 'order-first' : ''}`}>
+                    <div className={`relative aspect-[4/5] bg-[#111] overflow-hidden mb-3 md:mb-5 border transition-all duration-500 rounded-sm card-hover ${isRoyal ? 'border-[#D4AF37]/30' : 'border-white/5'}`}>
+                        <img src={item.img} alt={item.name} className="w-full h-full object-cover opacity-90 group-hover:scale-110 group-hover:opacity-100 transition-all duration-700" loading="lazy" />
+                        {isRoyal && <div className="absolute top-0 right-0 bg-gradient-to-r from-[#D4AF37] to-[#F1C40F] text-black text-[9px] font-bold px-2 py-1 uppercase tracking-widest shadow-lg">Royal</div>}
+                        {item.type === 'case' && <div className="absolute top-0 right-0 bg-white/20 backdrop-blur text-white text-[9px] font-bold px-2 py-1 uppercase tracking-widest">Armure</div>}
+                        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-gradient-to-t from-black/60 to-transparent">
+                            <span className="liquid-glass text-white px-4 py-2 uppercase text-[9px] tracking-widest rounded-sm font-medium backdrop-blur-md">Ver</span>
+                        </div>
+                    </div>
+                    <div className="text-center relative px-1">
+                        {isRoyal && <div className="absolute -inset-2 bg-[#D4AF37] opacity-0 group-hover:opacity-5 blur-xl transition-opacity"></div>}
+                        <h3 className={`text-xs md:text-lg serif italic mb-1 transition-colors truncate ${isRoyal ? 'text-[#D4AF37]' : 'text-white group-hover:text-gray-300'}`}>{item.name}</h3>
+                        <div className="flex flex-col items-center gap-0.5">
+                            {fakeOriginal && <span className="text-[10px] text-gray-500 line-through decoration-gray-600">{fakeOriginal}</span>}
+                            <p className="text-white font-medium text-xs md:text-base">{item.price}</p>
+                        </div>
+                    </div>
+                </a>
+            );
+        };
+
+        const Catalog = () => {
+            const [activeFilter, setActiveFilter] = useState('all');
+            const [activeColor, setActiveColor] = useState('all');
+            const [searchQuery, setSearchQuery] = useState('');
+            const [isCartOpen, setIsCartOpen] = useState(false);
+            const [isFilterOpen, setIsFilterOpen] = useState(false);
+            const [maxPrice, setMaxPrice] = useState(10000);
+
+            // Handle URL params
+            useEffect(() => {
+                const params = new URLSearchParams(window.location.search);
+                const filterParam = params.get('filter');
+                if (filterParam) {
+                    setActiveFilter(filterParam);
+                }
+            }, []);
+
+            // Filtering Logic
+            const filteredProducts = React.useMemo(() => {
+                let results = allProducts;
+
+                // Category Filter
+                if (activeFilter !== 'all') {
+                    results = results.filter(p => p.type === activeFilter);
+                }
+
+                // Search Filter
+                if (searchQuery) {
+                    const q = searchQuery.toLowerCase();
+                    results = results.filter(p => p.name.toLowerCase().includes(q) || (p.desc && p.desc.toLowerCase().includes(q)));
+                }
+
+                // Color Filter
+                if (activeColor !== 'all') {
+                    results = results.filter(p =>
+                        (p.color && p.color === activeColor) ||
+                        p.name.toLowerCase().includes(activeColor) ||
+                        p.desc.toLowerCase().includes(activeColor) ||
+                        (activeColor === 'gold' && (p.name.toLowerCase().includes('oro') || p.name.toLowerCase().includes('gold'))) ||
+                        (activeColor === 'silver' && (p.name.toLowerCase().includes('plata') || p.name.toLowerCase().includes('silver'))) ||
+                        (activeColor === 'black' && (p.name.toLowerCase().includes('negro') || p.name.toLowerCase().includes('noir') || p.name.toLowerCase().includes('black'))) ||
+                        (activeColor === 'white' && (p.name.toLowerCase().includes('blanco') || p.name.toLowerCase().includes('white'))) ||
+                        (activeColor === 'red' && (p.name.toLowerCase().includes('rojo') || p.name.toLowerCase().includes('crimson'))) ||
+                        (activeColor === 'green' && (p.name.toLowerCase().includes('verde') || p.name.toLowerCase().includes('forest'))) ||
+                        (activeColor === 'blue' && (p.name.toLowerCase().includes('azul') || p.name.toLowerCase().includes('navy'))) ||
+                        (activeColor === 'purple' && (p.name.toLowerCase().includes('púrpura') || p.name.toLowerCase().includes('purple'))) ||
+                        (activeColor === 'orange' && (p.name.toLowerCase().includes('naranja') || p.name.toLowerCase().includes('sunset') || p.name.toLowerCase().includes('orange'))) ||
+                        (activeColor === 'grey' && (p.name.toLowerCase().includes('gris') || p.name.toLowerCase().includes('grey') || p.name.toLowerCase().includes('titanium')))
+                    );
+                }
+
+                // Price Filter
+                results = results.filter(p => {
+                    const price = parseFloat(p.price.replace(/[^0-9.]/g, ''));
+                    return price <= maxPrice;
+                });
+
+                return results;
+            }, [allProducts, activeFilter, activeColor, searchQuery, maxPrice]);
+
+            return (
+                <div className="pt-24 md:pt-32 pb-16 md:pb-24 container mx-auto px-4 md:px-6 relative">
+                    {/* Fixed, Stable Search Hader */}
+                    <div className="sticky top-16 md:top-24 z-40 mb-8 md:mb-12">
+                        <div className="liquid-glass rounded-xl p-3 md:p-6 backdrop-blur-xl bg-[#050505]/90 border-b border-white/10 shadow-2xl flex gap-3 md:gap-4 items-center">
+                            <div className="flex-1 relative group">
+                                <input
+                                    type="text"
+                                    placeholder="Buscar..."
+                                    className="w-full bg-transparent border-b border-white/20 text-white text-sm py-2 px-2 focus:outline-none focus:border-[#D4AF37] transition-all duration-300 placeholder-gray-500 touch-target pl-8"
+                                    value={searchQuery}
+                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                />
+                                <svg className="absolute left-0 top-2 text-gray-500 group-focus-within:text-[#D4AF37] transition-colors" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                            </div>
+
+                            <button
+                                onClick={() => setIsFilterOpen(true)}
+                                className={`flex items-center gap-2 px-4 py-2 rounded-lg border transition-all touch-target ${activeFilter !== 'all' || activeColor !== 'all' ? 'bg-[#D4AF37] text-black border-[#D4AF37] font-bold' : 'border-white/20 text-white hover:bg-white/5'}`}
+                            >
+                                <Icons.Sliders size={18} />
+                                <span className="text-xs uppercase tracking-widest hidden md:inline">Filtros</span>
+                                {(activeFilter !== 'all' || activeColor !== 'all') && <span className="flex h-2 w-2 rounded-full bg-black md:hidden"></span>}
+                            </button>
+                        </div>
+                    </div>
+
+                    <div className="text-center mb-6 md:mb-10">
+                        <h1 className="text-2xl md:text-5xl text-white serif italic mb-2">
+                            {activeFilter === 'diamond' ? "L'Édition Royale" : activeFilter === 'case' ? "L'Armure" : activeFilter === 'steel' ? "L'Acier" : activeFilter === 'leather' ? "Atelier" : activeFilter === 'evolution' ? "L'Évolution" : activeFilter === 'mexico' ? "Vanto X México" : activeFilter === 'cooling' ? "MagSafe Aero" : activeFilter === 'samsung' ? "Samsung Series" : "Le Catalogue"}
+                        </h1>
+                        <p className="text-gray-500 text-[10px] tracking-[0.3em] uppercase">
+                            {filteredProducts.length} Piezas
+                            {activeColor !== 'all' && <span className="ml-2 text-[#D4AF37]">• Color {activeColor}</span>}
+                        </p>
+                    </div>
+
+                    <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-x-6 gap-y-8">
+                        {filteredProducts.map((p) => <ProductCard key={p.id} item={p} />)}
+                    </div>
+
+                    {filteredProducts.length === 0 && (
+                        <div className="text-center py-24 text-gray-500 font-light italic">
+                            No se encontraron piezas con estos filtros.<br />
+                            <button onClick={() => { setActiveFilter('all'); setActiveColor('all'); setSearchQuery(''); }} className="mt-4 text-[#D4AF37] underline text-xs uppercase tracking-widest">Limpiar Filtros</button>
+                        </div>
+                    )}
+
+                    <FilterDrawer
+                        isOpen={isFilterOpen}
+                        onClose={() => setIsFilterOpen(false)}
+                        activeCategory={activeFilter}
+                        setCategory={setActiveFilter}
+                        activeColor={activeColor}
+                        setColor={setActiveColor}
+                        maxPrice={maxPrice}
+                        setMaxPrice={setMaxPrice}
+                    />
+                    <CartDrawer isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />
+                    <Navbar onOpenCart={() => setIsCartOpen(true)} />
+                </div>
+            );
+        };
+        const App = () => {
+            const [isCartOpen, setIsCartOpen] = useState(false);
+            return (<div><Navbar onOpenCart={() => setIsCartOpen(true)} /><Catalog /><CartDrawer isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} /></div>);
+        };
+        ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+    </script>
+</body>
+
+</html>
