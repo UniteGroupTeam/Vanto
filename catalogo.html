@@ -379,7 +379,9 @@
                     <div className={`fixed top-0 right-0 h-[100dvh] w-full md:w-[450px] bg-[#0A0A0A] border-l border-white/10 z-[70] cart-drawer ${isOpen ? 'cart-open' : 'cart-closed'} flex flex-col`}>
                         <div className="p-6 border-b border-white/10 flex justify-between items-center"><h2 className="text-xl serif text-white italic">Tu Selección</h2><button onClick={onClose} className="text-gray-400 hover:text-white"><Icons.X /></button></div>
                         <div className="flex-1 overflow-y-auto p-6 space-y-6">{cart.length === 0 ? <div className="text-center text-gray-500 mt-20">Tu bolsa está vacía.</div> : cart.map((item, idx) => (<div key={idx} className="flex gap-4 bg-[#111] p-4 rounded-sm border border-white/5"><img src={item.img} className="w-20 h-24 object-cover rounded-sm" /><div className="flex-1"><div className="flex justify-between items-start mb-1"><h3 className="text-sm text-white font-medium">{item.name}</h3><button onClick={() => removeItem(idx)} className="text-gray-600 hover:text-red-500"><Icons.Trash /></button></div><p className="text-[10px] text-gray-400 uppercase tracking-wider mb-3">{item.variant}</p><div className="flex justify-between items-center"><p className="text-sm text-[#D4AF37]">{item.price}</p><div className="flex items-center gap-3 border border-white/10 px-2 py-1 rounded-sm"><button onClick={() => updateQty(idx, -1)} className="text-gray-400 hover:text-white"><Icons.Minus /></button><span className="text-xs text-white w-4 text-center">{item.qty || 1}</span><button onClick={() => updateQty(idx, 1)} className="text-gray-400 hover:text-white"><Icons.Plus /></button></div></div></div></div>))}</div>
-                        <div className="p-6 border-t border-white/10 bg-[#050505] mb-safe"><div className="flex justify-between items-center mb-4 pb-4 border-b border-white/5"><span className="text-gray-400 text-xs uppercase tracking-widest">Total Estimado</span><span className="text-xl serif text-[#D4AF37]">${total.toLocaleString()} MXN</span></div><button onClick={checkout} disabled={cart.length === 0} className="w-full bg-[#D4AF37] hover:bg-white text-black py-4 text-xs font-bold uppercase tracking-[0.2em] transition-colors disabled:opacity-50 disabled:cursor-not-allowed">FINALIZAR COMPRA PRIVADA</button><p className="text-[9px] text-gray-600 text-center mt-3 uppercase tracking-widest">Pago y envío coordinado vía WhatsApp</p></div>
+                        <div className="p-6 border-t border-white/10 bg-[#050505] mb-safe"><div className="flex justify-between items-center mb-4 pb-4 border-b border-white/5"><span className="text-gray-400 text-xs uppercase tracking-widest">Total Estimado</span><span className="text-xl serif text-[#D4AF37]">${total.toLocaleString()} MXN</span></div><button onClick={checkout} disabled={cart.length === 0} className="w-full bg-[#D4AF37] hover:bg-white text-black py-4 text-xs font-bold uppercase tracking-[0.2em] transition-colors disabled:opacity-50 disabled:cursor-not-allowed mb-3">FINALIZAR COMPRA PRIVADA</button>
+                            <a href={cart.some(i => i.type === 'mexico') ? "experience.html?product=mexico" : (cart.some(i => ['diamond', 'samsung'].includes(i.type)) ? "experience.html?product=diamond" : "experience.html?product=standard")} className="block w-full border border-white/20 hover:border-[#D4AF37] text-gray-300 hover:text-[#D4AF37] py-3 text-center text-[10px] uppercase tracking-widest transition-all mb-1">Personalizar Mi Tarjeta (Gratis)</a>
+                            <p className="text-[9px] text-gray-600 text-center mt-3 uppercase tracking-widest">Pago y envío coordinado vía WhatsApp</p></div>
                     </div>
                 </>
             );
@@ -461,23 +463,23 @@
 
         const mexicoProducts = [
             // Special Editions
-            { id: "mx-flag-clear-gold", type: "mexico", name: "Vanto X México: Insignia Gold", price: "$1,999", img: "https://i.imgur.com/VVzKmUQ.jpeg", desc: "Edición Bandera • Clear Case • Oro", tag: "Flagship" },
-            { id: "mx-flag-clear-slv", type: "mexico", name: "Vanto X México: Insignia Silver", price: "$1,999", img: "https://i.imgur.com/mtAmbIu.jpeg", desc: "Edición Bandera • Clear Case • Plata", tag: "Flagship" },
-            { id: "mx-flag-blk-gold", type: "mexico", name: "Legado Tricolor Gold", price: "$1,999", img: "https://i.imgur.com/eVx69va.jpeg", desc: "Edición Bandera • Black Case • Oro", tag: "Mexico" },
-            { id: "mx-flag-blk-slv", type: "mexico", name: "Legado Tricolor Silver", price: "$1,999", img: "https://i.imgur.com/o3rowKd.jpeg", desc: "Edición Bandera • Black Case • Plata", tag: "Mexico" },
-            { id: "mx-wht-blk-gold", type: "mexico", name: "Glaciar Gold Noir", price: "$1,999", img: "https://i.imgur.com/FEXTaqK.jpeg", desc: "Blanco Puro • Black Case • Oro", tag: "Mexico" },
-            { id: "mx-wht-blk-slv", type: "mexico", name: "Glaciar Silver Noir", price: "$1,999", img: "https://i.imgur.com/0l0CBir.jpeg", desc: "Blanco Puro • Black Case • Plata", tag: "Mexico" },
-            { id: "mx-wht-clear-gold", type: "mexico", name: "Glaciar Gold Clear", price: "$1,999", img: "https://i.imgur.com/VCNp3RX.jpeg", desc: "Blanco Puro • Clear Case • Oro", tag: "Mexico" },
-            { id: "mx-wht-clear-slv", type: "mexico", name: "Glaciar Silver Clear", price: "$1,999", img: "https://i.imgur.com/PQL6JEw.jpeg", desc: "Blanco Puro • Clear Case • Plata", tag: "Mexico" },
+            { id: "mx-flag-clear-gold", type: "mexico", name: "Vanto X México: Insignia Gold", price: "$2,999", img: "https://i.imgur.com/VVzKmUQ.jpeg", desc: "Edición Bandera • Clear Case • Oro", tag: "Flagship" },
+            { id: "mx-flag-clear-slv", type: "mexico", name: "Vanto X México: Insignia Silver", price: "$2,999", img: "https://i.imgur.com/mtAmbIu.jpeg", desc: "Edición Bandera • Clear Case • Plata", tag: "Flagship" },
+            { id: "mx-flag-blk-gold", type: "mexico", name: "Legado Tricolor Gold", price: "$2,999", img: "https://i.imgur.com/eVx69va.jpeg", desc: "Edición Bandera • Black Case • Oro", tag: "Mexico" },
+            { id: "mx-flag-blk-slv", type: "mexico", name: "Legado Tricolor Silver", price: "$2,999", img: "https://i.imgur.com/o3rowKd.jpeg", desc: "Edición Bandera • Black Case • Plata", tag: "Mexico" },
+            { id: "mx-wht-blk-gold", type: "mexico", name: "Glaciar Gold Noir", price: "$2,999", img: "https://i.imgur.com/FEXTaqK.jpeg", desc: "Blanco Puro • Black Case • Oro", tag: "Mexico" },
+            { id: "mx-wht-blk-slv", type: "mexico", name: "Glaciar Silver Noir", price: "$2,999", img: "https://i.imgur.com/0l0CBir.jpeg", desc: "Blanco Puro • Black Case • Plata", tag: "Mexico" },
+            { id: "mx-wht-clear-gold", type: "mexico", name: "Glaciar Gold Clear", price: "$2,999", img: "https://i.imgur.com/VCNp3RX.jpeg", desc: "Blanco Puro • Clear Case • Oro", tag: "Mexico" },
+            { id: "mx-wht-clear-slv", type: "mexico", name: "Glaciar Silver Clear", price: "$2,999", img: "https://i.imgur.com/PQL6JEw.jpeg", desc: "Blanco Puro • Clear Case • Plata", tag: "Mexico" },
             // Standard Editions
-            { id: "mx-blk-gold", type: "mexico", name: "Obsidian Royal Gold", price: "$1,899", img: "https://i.imgur.com/bCJOQaI.jpeg", desc: "Negro Profundo • Black Case • Oro" },
-            { id: "mx-blk-slv", type: "mexico", name: "Obsidian Royal Silver", price: "$1,899", img: "https://i.imgur.com/4CanOR6.jpeg", desc: "Negro Profundo • Black Case • Plata" },
-            { id: "mx-blk-clear-gold", type: "mexico", name: "Obsidian Clear Gold", price: "$1,899", img: "https://i.imgur.com/v6p6Bhy.jpeg", desc: "Negro Profundo • Clear Case • Oro" },
-            { id: "mx-blk-clear-slv", type: "mexico", name: "Obsidian Clear Silver", price: "$1,899", img: "https://i.imgur.com/YCdAQVC.jpeg", desc: "Negro Profundo • Clear Case • Plata" },
-            { id: "mx-org-blk-gold", type: "mexico", name: "Sunset Gold Noir", price: "$1,899", img: "https://i.imgur.com/uBrF2I3.jpeg", desc: "Naranja • Black Case • Oro" },
-            { id: "mx-org-clear-gold", type: "mexico", name: "Sunset Clear Gold", price: "$1,899", img: "https://i.imgur.com/aLrBsRv.jpeg", desc: "Naranja • Clear Case • Oro" },
-            { id: "mx-red-blk-gold", type: "mexico", name: "Crimson Gold Noir", price: "$1,899", img: "https://i.imgur.com/9ZLZDcv.jpeg", desc: "Rojo Intenso • Black Case • Oro" },
-            { id: "mx-trans-blk-gold", type: "mexico", name: "Crystal Black Gold", price: "$1,899", img: "https://i.imgur.com/HkLRSIT.jpeg", desc: "Cristal • Black Case • Oro" },
+            { id: "mx-blk-gold", type: "mexico", name: "Obsidian Royal Gold", price: "$2,899", img: "https://i.imgur.com/bCJOQaI.jpeg", desc: "Negro Profundo • Black Case • Oro" },
+            { id: "mx-blk-slv", type: "mexico", name: "Obsidian Royal Silver", price: "$2,899", img: "https://i.imgur.com/4CanOR6.jpeg", desc: "Negro Profundo • Black Case • Plata" },
+            { id: "mx-blk-clear-gold", type: "mexico", name: "Obsidian Clear Gold", price: "$2,899", img: "https://i.imgur.com/v6p6Bhy.jpeg", desc: "Negro Profundo • Clear Case • Oro" },
+            { id: "mx-blk-clear-slv", type: "mexico", name: "Obsidian Clear Silver", price: "$2,899", img: "https://i.imgur.com/YCdAQVC.jpeg", desc: "Negro Profundo • Clear Case • Plata" },
+            { id: "mx-org-blk-gold", type: "mexico", name: "Sunset Gold Noir", price: "$2,899", img: "https://i.imgur.com/uBrF2I3.jpeg", desc: "Naranja • Black Case • Oro" },
+            { id: "mx-org-clear-gold", type: "mexico", name: "Sunset Clear Gold", price: "$2,899", img: "https://i.imgur.com/aLrBsRv.jpeg", desc: "Naranja • Clear Case • Oro" },
+            { id: "mx-red-blk-gold", type: "mexico", name: "Crimson Gold Noir", price: "$2,899", img: "https://i.imgur.com/9ZLZDcv.jpeg", desc: "Rojo Intenso • Black Case • Oro" },
+            { id: "mx-trans-blk-gold", type: "mexico", name: "Crystal Black Gold", price: "$2,899", img: "https://i.imgur.com/HkLRSIT.jpeg", desc: "Cristal • Black Case • Oro" },
             { id: "mx-trans-blk-slv", type: "mexico", name: "Crystal Black Silver", price: "$1,899", img: "https://i.imgur.com/Nea72qj.jpeg", desc: "Cristal • Black Case • Plata" },
             { id: "mx-trans-clear-gold", type: "mexico", name: "Crystal Clear Gold", price: "$1,899", img: "https://i.imgur.com/zZDFtKC.jpeg", desc: "Cristal • Clear Case • Oro" },
             { id: "mx-trans-clear-slv", type: "mexico", name: "Crystal Clear Silver", price: "$1,899", img: "https://i.imgur.com/JSTwivo.jpeg", desc: "Cristal • Clear Case • Plata" },
@@ -504,6 +506,10 @@
             { id: "sam-full-black", type: "samsung", name: "L'Impérial Noir", price: "$1,299", img: "https://i.imgur.com/qkxpay4.jpeg", desc: "Full Acero 316L • Brazalete Eslabones • Noir Absolu", tag: "Élite" },
             { id: "sam-full-silver", type: "samsung", name: "L'Impérial Argent", price: "$1,299", img: "https://i.imgur.com/Y4xuxV1.jpeg", desc: "Full Acero 316L • Brazalete Eslabones • Argent Sterling", tag: "Élite" },
             { id: "sam-full-titanium", type: "samsung", name: "L'Impérial Titane", price: "$1,299", img: "https://i.imgur.com/VdtU8ik.jpeg", desc: "Full Acero 316L • Brazalete Eslabones • Titane Brut", tag: "Élite" },
+            // Ultra Executive Collection (New)
+            { id: "sam-exec-titan", type: "samsung", name: "L'Exécutif Titane", price: "$899", img: "https://i.imgur.com/roCejpR.jpeg", desc: "Titanio Grado Aeroespacial • Gris Clásico", tag: "Business" },
+            { id: "sam-exec-noir", type: "samsung", name: "L'Exécutif Noir", price: "$899", img: "https://i.imgur.com/on7i8V0.jpeg", desc: "Titanio Grado Aeroespacial • Negro Mate", tag: "Business" },
+            { id: "sam-exec-dark", type: "samsung", name: "L'Exécutif Sombre", price: "$899", img: "https://i.imgur.com/WGuVOnH.jpeg", desc: "Titanio Grado Aeroespacial • Gris Oscuro", tag: "Business" },
         ];
 
         // Mexico collection moved to top of the list for priority visibility
