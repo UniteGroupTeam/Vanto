@@ -118,13 +118,13 @@
         }
 
         const CardCustomizer = () => {
-            const canvasRef = useRef(null); // Ref to hold the canvas element
+            const canvasWrapperRef = useRef(null);
             const [fabricCanvas, setFabricCanvas] = useState(null);
             const [name, setName] = useState("");
             const [selectedColor, setSelectedColor] = useState("black");
             const [productType, setProductType] = useState('standard');
             const [activeObject, setActiveObject] = useState(null);
-            const [selectedLogo, setSelectedLogo] = useState('snake');
+            const [textCount, setTextCount] = useState(1); // Start with 1 (Name)
 
             // Card Colors Data (Yellow Removed)
             const colors = [
@@ -140,8 +140,9 @@
             ];
 
             const logos = [
-                { id: 'snake', name: 'Snake', url: 'https://imgur.com/kbF7hve.png' },
-                { id: 'full', name: 'Logo Full', url: 'https://imgur.com/O4x44qT.png' }
+                { id: 'original', name: 'Vanto Original', url: 'https://i.imgur.com/9QHzpXh.png' },
+                { id: 'icon', name: 'Icono', url: 'https://i.imgur.com/2k2GRCB.png' },
+                { id: 'combined', name: 'Logo + Icono', url: 'https://i.imgur.com/RgxKuqr.png' }
             ];
 
             // Initialize from URL
@@ -155,6 +156,30 @@
                     else if (type === 'diamond') setSelectedColor('black'); // Royale
                     else setSelectedColor('blue');
                 } catch (e) { console.error("URL Params error:", e); }
+            }, []);
+
+            // Mobile Scaling Logic
+            useEffect(() => {
+                const handleResize = () => {
+                    if (canvasWrapperRef.current) {
+                        const screenWidth = window.innerWidth;
+                        const containerWidth = Math.min(screenWidth - 32, 600); // 32px padding
+                        const scale = containerWidth / 600;
+
+                        if (scale < 1) {
+                            canvasWrapperRef.current.style.transform = `scale(${scale})`;
+                            canvasWrapperRef.current.style.transformOrigin = 'top center';
+                            canvasWrapperRef.current.style.marginBottom = `-${(380 * (1 - scale))}px`; // Adjust layout space
+                        } else {
+                            canvasWrapperRef.current.style.transform = 'none';
+                            canvasWrapperRef.current.style.marginBottom = '0';
+                        }
+                    }
+                };
+
+                window.addEventListener('resize', handleResize);
+                handleResize(); // Init
+                return () => window.removeEventListener('resize', handleResize);
             }, []);
 
             const getMembershipName = () => {
@@ -217,19 +242,21 @@
                     fontFamily: 'Playfair Display',
                     fill: 'rgba(255, 255, 255, 0.6)',
                     fontSize: 40,
-                    charSpacing: 100
+                    charSpacing: 100,
+                    isUserText: true
                 });
                 canvas.add(text);
 
-                // Add Vanto Logo
-                fabric.Image.fromURL('https://imgur.com/kbF7hve.png', function (img) {
+                // Add default logo (Icon)
+                fabric.Image.fromURL('https://imgur.com/2k2GRCB.png', function (img) {
                     if (!canvas) return;
                     img.set({
                         left: 480,
                         top: 40,
                         scaleX: 0.1,
                         scaleY: 0.1,
-                        opacity: 0.6 // Laser effect
+                        opacity: 0.6, // Laser effect
+                        isLogo: true, name: 'vanto_logo'
                     });
 
                     // Apply grayscale filter for opacity effect simulation
@@ -237,13 +264,27 @@
                     img.applyFilters();
 
                     canvas.add(img);
+                    canvas.requestRenderAll();
                 }, { crossOrigin: 'anonymous' });
 
                 canvas.on('selection:created', (e) => setActiveObject(e.selected ? e.selected[0] : null));
                 canvas.on('selection:updated', (e) => setActiveObject(e.selected ? e.selected[0] : null));
                 canvas.on('selection:cleared', () => setActiveObject(null));
 
+                // Track text count on modifications
+                canvas.on('object:added', updateTextCount);
+                canvas.on('object:removed', updateTextCount);
+
                 setFabricCanvas(canvas);
+
+                function updateTextCount() {
+                    if (canvas) {
+                        try {
+                            const count = canvas.getObjects().filter(o => (o.type === 'i-text' || o.type === 'text') && o.isUserText).length;
+                            setTextCount(count);
+                        } catch (e) { }
+                    }
+                }
 
                 return () => {
                     canvas.dispose();
@@ -283,35 +324,55 @@
 
             const addText = () => {
                 if (!fabricCanvas) return;
+                // Limit check (including initial name)
+                const currentCount = fabricCanvas.getObjects().filter(o => (o.type === 'i-text' || o.type === 'text') && o.isUserText).length;
+                if (currentCount >= 2) {
+                    alert("Solo puedes agregar hasta 2 elementos de texto.");
+                    return;
+                }
+
                 const text = new fabric.IText('TEXTO', {
                     left: 100,
                     top: 100,
                     fontFamily: 'Lato',
                     fill: 'rgba(255, 255, 255, 0.6)',
-                    fontSize: 24
+                    fontSize: 24,
+                    isUserText: true
                 });
                 fabricCanvas.add(text);
                 fabricCanvas.setActiveObject(text);
+                setTextCount(currentCount + 1);
             };
 
-            const addLogo = () => {
+            const addLogo = (logoUrl) => {
                 if (!fabricCanvas) return;
-                const logoObj = logos.find(l => l.id === selectedLogo);
-                if (!logoObj) return;
 
-                fabric.Image.fromURL(logoObj.url, function (img) {
-                    if (fabricCanvas.disposed) return;
+                // Safely remove existing logos using a copy of the array
+                const objects = [...fabricCanvas.getObjects()];
+                objects.forEach(obj => {
+                    if (obj.isLogo || obj.name === 'vanto_logo') {
+                        fabricCanvas.remove(obj);
+                    }
+                });
+
+                fabric.Image.fromURL(logoUrl, function (img) {
+                    // Check if canvas is still valid
+                    if (!img || !fabricCanvas || fabricCanvas.disposed) return;
+
                     img.set({
                         left: 200,
                         top: 150,
-                        scaleX: 0.1,
-                        scaleY: 0.1,
-                        opacity: 0.6
+                        scaleX: 0.15, // Slightly larger base scale
+                        scaleY: 0.15,
+                        opacity: 0.6,
+                        isLogo: true,
+                        name: 'vanto_logo'
                     });
                     img.filters.push(new fabric.Image.filters.Grayscale());
                     img.applyFilters();
                     fabricCanvas.add(img);
                     fabricCanvas.setActiveObject(img);
+                    fabricCanvas.requestRenderAll(); // FORCE RENDER
                 }, { crossOrigin: 'anonymous' });
             };
 
@@ -320,6 +381,7 @@
                     fabricCanvas.remove(activeObject);
                     fabricCanvas.discardActiveObject();
                     fabricCanvas.renderAll();
+                    // Text count updates automatically via event listener
                 }
             };
 
@@ -352,55 +414,83 @@
             return (
                 <div className="min-h-screen bg-[#050505] text-[#E5E5E5] flex flex-col items-center py-10 px-4">
                     <div className="w-full max-w-6xl">
-                        <div className="flex justify-between items-center mb-10">
+                        <div className="flex justify-between items-center mb-8">
                             <a href="catalogo.html" className="flex items-center gap-2 text-gray-400 hover:text-[#D4AF37] transition-colors text-xs uppercase tracking-widest">
-                                <Icons.ArrowLeft size={18} /> Volver al Catálogo
+                                <Icons.ArrowLeft size={18} /> Volver
                             </a>
-                            <img src="https://imgur.com/O4x44qT.png" alt="Vanto" className="h-12 opacity-80" />
-                            <div className="w-32"></div> {/* Spacer */}
+                            <img src="https://imgur.com/O4x44qT.png" alt="Vanto" className="h-8 md:h-12 opacity-80" />
+                            <div className="w-20 md:w-32"></div>
                         </div>
 
-                        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
-                            {/* Controls Left */}
-                            <div className="lg:col-span-4 space-y-8">
+                        {/* Flex-col-reverse for Mobile: Controls Below Canvas */}
+                        <div className="flex flex-col lg:grid lg:grid-cols-12 gap-8 lg:gap-12">
+
+                            {/* Canvas Section (Top on mobile, Right on Desktop) */}
+                            <div className="lg:col-span-8 lg:order-2 flex flex-col items-center">
+                                {/* Wrapper for scaling */}
+                                <div ref={canvasWrapperRef} className="canvas-container-wrapper mb-6 transition-transform duration-300 ease-out">
+                                    <canvas id="c"></canvas>
+                                </div>
+
+                                <div className="flex gap-4 flex-wrap justify-center">
+                                    <button onClick={addText} disabled={textCount >= 2} className="flex items-center gap-2 bg-[#1a1a1a] hover:bg-[#222] border border-white/10 px-4 py-2 rounded-full text-xs uppercase cursor-pointer tracking-widest transition-all disabled:opacity-50 disabled:cursor-not-allowed">
+                                        <Icons.Type size={16} /> Texto ({textCount}/2)
+                                    </button>
+
+                                    <button onClick={deleteSelected} disabled={!activeObject} className="flex items-center gap-2 bg-red-900/20 hover:bg-red-900/40 border border-red-500/20 px-4 py-2 rounded-full text-xs uppercase tracking-widest transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer">
+                                        <Icons.Trash size={16} /> Eliminar
+                                    </button>
+                                </div>
+                                <p className="text-gray-500 text-[9px] mt-4 max-w-md text-center hidden md:block">
+                                    * Usa gestos para mover, escalar y rotar los elementos en tu tarjeta.
+                                </p>
+                            </div>
+
+                            {/* Controls Section (Bottom on mobile, Left on Desktop) */}
+                            <div className="lg:col-span-4 lg:order-1 space-y-6 md:space-y-8">
                                 <div>
-                                    <h1 className="text-3xl serif italic text-white mb-2">Vanto Experience</h1>
+                                    <h1 className="text-2xl md:text-3xl serif italic text-white mb-2">Vanto Experience</h1>
                                     <p className="text-gray-500 text-xs leading-loose">
                                         Diseña tu tarjeta de membresía de metal.
                                         Nuestras tarjetas representan tu nivel de pertenencia a la comunidad Vanto.
-                                        Aunque puedes elegir cualquier color, los tonos destacados han sido seleccionados artesanalmente para armonizar con la colección que has adquirido.
+                                    </p>
+                                    <p className="text-[#D4AF37] text-[10px] mt-2 italic font-light">
+                                        * Nota: Las tarjetas son grabadas con láser de alta precisión, por lo que los logotipos y textos se mostrarán en escala de grises opaca con efecto metálico, no a color.
                                     </p>
                                 </div>
 
                                 <div className="p-4 border border-yellow-900/30 bg-yellow-900/10 rounded-sm">
-                                    <p className="text-[#D4AF37] text-xs uppercase tracking-widest mb-1">Tu Membresía</p>
+                                    <div className="flex justify-between items-baseline mb-1">
+                                        <p className="text-[#D4AF37] text-xs uppercase tracking-widest">Tu Membresía</p>
+                                        <a href="membresia.html" target="_blank" className="text-[9px] text-gray-500 hover:text-white underline decoration-1">¿Qué es esto?</a>
+                                    </div>
                                     <p className="text-xl serif italic text-white">{getMembershipName()}</p>
                                 </div>
 
                                 {/* Colors */}
                                 <div>
-                                    <h3 className="text-[10px] uppercase tracking-[0.2em] text-[#D4AF37] mb-4 border-b border-white/10 pb-2">Colección Premium</h3>
-                                    <div className="flex flex-wrap gap-3 mb-6">
+                                    <h3 className="text-[10px] uppercase tracking-[0.2em] text-[#D4AF37] mb-3 border-b border-white/10 pb-2">Colección Premium</h3>
+                                    <div className="flex flex-wrap gap-2 mb-4">
                                         {getHighlightedColors().length > 0 ? getHighlightedColors().map(c => (
                                             <button
                                                 key={c.id}
                                                 onClick={() => setSelectedColor(c.id)}
-                                                className={`w-12 h-12 rounded-full border-2 transition-all duration-300 relative ${selectedColor === c.id ? 'border-[#D4AF37] scale-110 shadow-[0_0_15px_rgba(212,175,55,0.3)]' : 'border-transparent hover:scale-105'}`}
+                                                className={`w-10 h-10 md:w-12 md:h-12 rounded-full border-2 transition-all duration-300 relative ${selectedColor === c.id ? 'border-[#D4AF37] scale-110 shadow-[0_0_15px_rgba(212,175,55,0.3)]' : 'border-transparent hover:scale-105'}`}
                                                 style={{ backgroundColor: c.hex }}
                                                 title={c.name}
                                             >
                                                 {selectedColor === c.id && <div className="absolute inset-0 flex items-center justify-center"><Icons.Check size={14} className={['black', 'glossy_black', 'purple', 'red'].includes(c.id) ? 'text-white' : 'text-black'} /></div>}
                                             </button>
-                                        )) : <p className="text-sm text-gray-600">Selecciona un producto exclusivo para ver los colores recomendados.</p>}
+                                        )) : <p className="text-sm text-gray-600">N/A</p>}
                                     </div>
 
-                                    <h3 className="text-[10px] uppercase tracking-[0.2em] text-gray-500 mb-4 border-b border-white/10 pb-2">Essential Collection</h3>
-                                    <div className="flex flex-wrap gap-3">
+                                    <h3 className="text-[10px] uppercase tracking-[0.2em] text-gray-500 mb-3 border-b border-white/10 pb-2">Essential Collection</h3>
+                                    <div className="flex flex-wrap gap-2">
                                         {getStandardColors().map(c => (
                                             <button
                                                 key={c.id}
                                                 onClick={() => setSelectedColor(c.id)}
-                                                className={`w-10 h-10 rounded-full border transition-all duration-300 relative ${selectedColor === c.id ? 'border-white scale-110' : 'border-white/10 hover:border-white/50'}`}
+                                                className={`w-8 h-8 md:w-10 md:h-10 rounded-full border transition-all duration-300 relative ${selectedColor === c.id ? 'border-white scale-110' : 'border-white/10 hover:border-white/50'}`}
                                                 style={{ backgroundColor: c.hex }}
                                                 title={c.name}
                                             >
@@ -413,68 +503,46 @@
                                 <div className="space-y-4">
                                     <div className="bg-[#111] p-4 rounded-sm border border-white/5">
                                         <label className="text-[10px] uppercase tracking-widest text-gray-500 mb-2 block">Nombre en Tarjeta (Máx 20)</label>
-                                        <div className="flex gap-2">
-                                            <input
-                                                type="text"
-                                                value={name}
-                                                maxLength={20}
-                                                onChange={(e) => {
-                                                    setName(e.target.value);
-                                                    if (fabricCanvas) {
-                                                        const objs = fabricCanvas.getObjects();
-                                                        // Update "TU NOMBRE" placeholder or created text
-                                                        objs.forEach(o => {
-                                                            if (o.type === 'i-text' && (o.text === 'TU NOMBRE' || o.text === name)) {
-                                                                o.set('text', e.target.value.toUpperCase());
-                                                            }
-                                                        });
-                                                        fabricCanvas.renderAll();
-                                                    }
-                                                }}
-                                                placeholder="TU NOMBRE"
-                                                className="bg-black border border-white/20 text-white px-3 py-2 w-full text-xs outline-none focus:border-[#D4AF37]"
-                                            />
-                                        </div>
+                                        <input
+                                            type="text"
+                                            value={name}
+                                            maxLength={20}
+                                            onChange={(e) => {
+                                                setName(e.target.value);
+                                                if (fabricCanvas) {
+                                                    const objs = fabricCanvas.getObjects();
+                                                    objs.forEach(o => {
+                                                        if (o.type === 'i-text' && o.isUserText && (o.text === 'TU NOMBRE' || o.text === name)) {
+                                                            o.set('text', e.target.value.toUpperCase());
+                                                        }
+                                                    });
+                                                    fabricCanvas.renderAll();
+                                                }
+                                            }}
+                                            placeholder="TU NOMBRE"
+                                            className="bg-black border border-white/20 text-white px-3 py-2 w-full text-xs outline-none focus:border-[#D4AF37]"
+                                        />
                                     </div>
 
                                     <div className="bg-[#111] p-4 rounded-sm border border-white/5">
-                                        <label className="text-[10px] uppercase tracking-widest text-gray-500 mb-2 block">Seleccionar Estilo de Logo</label>
+                                        <label className="text-[10px] uppercase tracking-widest text-gray-500 mb-2 block">Agregar Logo</label>
                                         <div className="grid grid-cols-2 gap-2">
                                             {logos.map(l => (
                                                 <button
                                                     key={l.id}
-                                                    onClick={() => setSelectedLogo(l.id)}
-                                                    className={`py-2 px-2 text-[10px] uppercase tracking-widest border transition-all ${selectedLogo === l.id ? 'border-[#D4AF37] text-[#D4AF37] bg-[#D4AF37]/10' : 'border-white/10 text-gray-400 hover:border-white/30'}`}
+                                                    onClick={() => addLogo(l.url)}
+                                                    className="py-3 px-2 text-[10px] uppercase tracking-widest border border-white/10 text-gray-400 hover:border-[#D4AF37] hover:text-[#D4AF37] hover:bg-[#D4AF37]/10 transition-all flex items-center justify-center gap-2"
                                                 >
-                                                    {l.name}
+                                                    <Icons.Plus size={12} /> {l.name}
                                                 </button>
                                             ))}
                                         </div>
                                     </div>
-                                </div>
-                            </div>
 
-                            {/* Canvas Center */}
-                            <div className="lg:col-span-8 flex flex-col items-center justify-center">
-                                <div className="canvas-container-wrapper mb-6">
-                                    <canvas id="c"></canvas>
-                                </div>
-
-                                <div className="flex gap-4">
-                                    <button onClick={addText} className="flex items-center gap-2 bg-[#1a1a1a] hover:bg-[#222] border border-white/10 px-4 py-2 rounded-full text-xs uppercase tracking-widest transition-all">
-                                        <Icons.Type size={16} /> Agregar Texto
-                                    </button>
-                                    <button onClick={addLogo} className="flex items-center gap-2 bg-[#1a1a1a] hover:bg-[#222] border border-white/10 px-4 py-2 rounded-full text-xs uppercase tracking-widest transition-all">
-                                        <Icons.Image size={16} /> Agregar Logo
-                                    </button>
-                                    <button onClick={deleteSelected} disabled={!activeObject} className="flex items-center gap-2 bg-red-900/20 hover:bg-red-900/40 border border-red-500/20 px-4 py-2 rounded-full text-xs uppercase tracking-widest transition-all disabled:opacity-50 disabled:cursor-not-allowed">
-                                        <Icons.Trash size={16} /> Eliminar
+                                    <button onClick={downloadCard} className="w-full bg-gradient-to-r from-[#D4AF37] to-[#B8860B] text-black px-4 py-4 font-bold tracking-[0.2em] text-xs uppercase rounded-sm hover:shadow-[0_0_20px_rgba(212,175,55,0.4)] transition-all flex items-center justify-center gap-3">
+                                        <Icons.Download size={18} /> Confirmar Diseño
                                     </button>
                                 </div>
-
-                                <button onClick={downloadCard} className="mt-12 bg-gradient-to-r from-[#D4AF37] to-[#B8860B] text-black px-8 py-4 font-bold tracking-[0.2em] text-xs uppercase rounded-sm hover:shadow-[0_0_20px_rgba(212,175,55,0.4)] transition-all flex items-center gap-3">
-                                    <Icons.Download size={18} /> Confirmar Diseño Personalizado
-                                </button>
                             </div>
                         </div>
                     </div>
